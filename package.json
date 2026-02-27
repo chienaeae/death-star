@@ -1,0 +1,22 @@
+{
+  "name": "death-star-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Death Star Monorepo Foundation managing Node.js workspaces",
+  "packageManager": "npm@10.8.2",
+  "workspaces": [
+    "holocron",
+    "millennium",
+    "skywalker"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "format": "turbo run format"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "turbo": "^2.3.3"
+  }
+}

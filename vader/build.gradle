@@ -1,0 +1,67 @@
+/*
+ * ---------------------------------------------------------------------------
+ * Vader Backend Service - Gradle Build Configuration
+ * ---------------------------------------------------------------------------
+ */
+
+plugins {
+    id 'java'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
+java {
+    // Mandating Java 23 to enable Virtual Threads and modern language features
+    sourceCompatibility = '23'
+    targetCompatibility = '23'
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+dependencies {
+    // 1. Web & Virtual Threads (Spring WebMVC handles VT via configuration)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    
+    // 2. Data Persistence (JPA works natively with Virtual Threads)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    
+    // 3. Messaging (NATS Core Client)
+    implementation 'io.nats:jnats:2.20.5'
+    // 4. Database Migration & Driver
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+    runtimeOnly 'org.postgresql:postgresql'
+    
+    // 5. Utilities & Observability
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    
+    // 6. Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+// Optimization: Enable Layered Jars for Docker image efficiency
+bootJar {
+    layered {
+        enabled = true
+    }
+}
+
+// Compile options for Java 23 (e.g., enable preview features if needed)
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    // options.compilerArgs.add('--enable-preview')
+}

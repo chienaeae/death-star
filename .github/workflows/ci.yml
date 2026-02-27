@@ -1,0 +1,117 @@
+name: Death Star Monorepo CI
+
+# Trigger: run on PRs targeting main or direct pushes to main
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # ==========================================
+  # Job 1: L7 Router (change detection)
+  # Analyzes git diff to decide which microservice CI jobs to trigger
+  # ==========================================
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      contract: ${{ steps.filter.outputs.contract }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Path Filter (dynamic routing core)
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            # If holocron changes, treat both backend and frontend as changed (contract change, full validation)
+            backend:
+              - 'vader/**'
+              - 'holocron/**'
+              - 'docker-compose.e2e.yml'
+            frontend:
+              - 'skywalker/**'
+              - 'millennium/**'
+              - 'holocron/**'
+            contract:
+              - 'holocron/**'
+
+  # ==========================================
+  # Job 2: Backend Validation (Java 23 + Testcontainers)
+  # Runs only when backend_changed == 'true'
+  # ==========================================
+  backend-test:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Java 23 (Zulu)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '23'
+          distribution: 'zulu'
+          cache: 'gradle'
+
+      - name: Run Backend Tests (with Testcontainers)
+        # GitHub Runner has Docker daemon available by default; Testcontainers can connect directly
+        run: ./gradlew :vader:test
+
+  # ==========================================
+  # Job 3: Frontend Validation (Turborepo + Vite)
+  # Runs only when frontend_changed == 'true'
+  # ==========================================
+  frontend-build:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.frontend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          
+      - name: Install Dependencies
+        run: npm ci
+        
+      - name: Typecheck and Build via Turborepo
+        # Turbo automatically handles dependency generation for @death-star/holocron
+        run: npx turbo run build --filter=@death-star/skywalker
+
+  # ==========================================
+  # Job 4: E2E Smoke Test (Container Integration)
+  # Ensures containers start correctly, Nginx proxies correctly, and DB connections work
+  # ==========================================
+  e2e-smoke-test:
+    # Must wait for prerequisite jobs to finish; skipped is treated as success
+    needs: [detect-changes, backend-test, frontend-build]
+    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Just (Command Runner)
+        uses: extractions/setup-just@v2
+
+      - name: Spin up E2E Topology
+        # Triggers Docker build and sequentially starts Postgres, NATS, Vader, and Skywalker
+        run: just e2e-up
+        
+      - name: Verify API Gateway (Declarative Smoke Test)
+        # Calls the encapsulated Hurl script with deterministic retries and JSON assertions
+        run: just e2e-smoke-test
+        
+      - name: Dump Docker Logs on Failure
+        if: failure()
+        run: docker compose -f docker-compose.e2e.yml logs
+
+      - name: Tear Down
+        if: always()
+        run: just e2e-down

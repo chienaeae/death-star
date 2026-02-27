@@ -1,0 +1,24 @@
+# ---------------------------------------------------------------------------
+# End-to-End (E2E) Test Configuration
+# Target: CI pipeline or local isolated test containers
+# ---------------------------------------------------------------------------
+spring:
+  datasource:
+    # Typically points to a distinct database port/schema for isolated E2E runs
+    url: ${E2E_DB_URL:jdbc:postgresql://localhost:5433/deathstar_e2e}
+    username: ${E2E_DB_USER:postgres}
+    password: ${E2E_DB_PASSWORD:password}
+    hikari:
+      maximum-pool-size: 5
+  
+  flyway:
+    # CRITICAL FOR TESTS: Allows Flyway to wipe the schema between test suites
+    clean-disabled: false
+
+nats:
+  url: ${E2E_NATS_URL:nats://localhost:4223}
+
+logging:
+  level:
+    root: WARN
+    com.deathstar.vader: INFO
