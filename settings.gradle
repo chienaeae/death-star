@@ -1,0 +1,7 @@
+// ---------------------------------------------------------------------------
+// Gradle Multi-Project Configuration
+// ---------------------------------------------------------------------------
+rootProject.name = 'death-star'
+
+// Register the Spring WebMVC backend as a sub-project
+include 'vader'

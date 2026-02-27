@@ -1,0 +1,34 @@
+plugins {
+    // We define versions here but don't apply them to the root project
+    id 'org.springframework.boot' version '3.4.2' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
+    id 'java'
+    
+    // Spotless: A global code formatter to ensure style consistency
+    id 'com.diffplug.spotless' version '6.25.0'
+}
+
+allprojects {
+    group = 'com.deathstar'
+    version = '0.0.1-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+// Global Spotless configuration for all Java subprojects
+subprojects {
+    apply plugin: 'com.diffplug.spotless'
+    
+    spotless {
+        java {
+            target 'src/*/java/**/*.java'
+            // Using AOSP style as the standard for this monorepo
+            googleJavaFormat('1.22.0').aosp()
+            removeUnusedImports()
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
+    }
+}

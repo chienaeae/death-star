@@ -1,0 +1,39 @@
+# ---------------------------------------------------------------------------
+# Death Star - Generic Backend Configuration
+# ---------------------------------------------------------------------------
+spring:
+  application:
+    name: vader
+
+  # Default to 'dev' profile for seamless local DX
+  profiles:
+    active: dev
+
+  # THE CORE OF VADER PERFORMANCE:
+  # This enables Project Loom (Virtual Threads) for the entire Webstack.
+  # Tomcat will now handle each HTTP request on a lightweight virtual thread.
+  threads:
+    virtual:
+      enabled: true
+
+  # Flyway Migration Strategy
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  # Standard JPA/Hibernate configuration
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate # Schema is strictly managed by Flyway
+    properties:
+      hibernate:
+        format_sql: true
+
+# Monitoring endpoints for K8s Liveness/Readiness
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus

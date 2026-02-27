@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    
+    /* React Context */
+    "jsx": "react-jsx",
+    
+    /* Strict Type-Checking Options */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    
+    /* Module Resolution */
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    
+    /* * CRITICAL MONOREPO SETTING:
+     * We do not emit compiled .js files. The consuming application 
+     * (e.g., skywalker's Vite setup) is strictly responsible for transpilation.
+     * This eliminates build steps for the UI library during local development.
+     */
+    "noEmit": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

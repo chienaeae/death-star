@@ -1,0 +1,11 @@
+@import "@death-star/millennium/src/styles/globals.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+}

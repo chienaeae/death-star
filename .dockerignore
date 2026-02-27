@@ -1,0 +1,38 @@
+# --- Dependencies ---
+# Prevent macOS/Local binaries from overwriting Linux symlinks or node_modules
+node_modules/
+**/node_modules/
+
+# --- Build Outputs & Caches ---
+dist/
+**/dist/
+build/
+**/build/
+.turbo/
+**/.turbo/
+.next/
+**/.next/
+out/
+**/out/
+
+# --- Java / Gradle Specific ---
+.gradle/
+vader/out/
+vader/bin/
+# Allow gradlew to run in Docker while excluding local binary cache
+!gradle/wrapper/gradle-wrapper.jar
+
+# --- Generated Artifacts ---
+# Must be generated fresh strictly inside the container to ensure version alignment
+holocron/src/generated/
+
+# --- Environment & OS Specific ---
+.env
+.env.*.local
+.DS_Store
+Thumbs.db
+*.log
+
+# --- Version Control ---
+.git
+.gitignore

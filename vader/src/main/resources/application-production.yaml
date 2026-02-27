@@ -1,0 +1,29 @@
+# ---------------------------------------------------------------------------
+# Production Configuration
+# Target: Kubernetes, AWS ECS, or production-grade environments
+# ---------------------------------------------------------------------------
+spring:
+  datasource:
+    # Rely strictly on injected Environment Variables. Provide sensible defaults 
+    # assuming a standard K8s internal DNS (e.g., db-service:5432)
+    url: ${DB_URL:jdbc:postgresql://db:5432/deathstar}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      # High concurrency throughput optimized for Virtual Threads
+      maximum-pool-size: ${DB_POOL_MAX:50}
+      minimum-idle: ${DB_POOL_MIN:10}
+      connection-timeout: 20000
+      max-lifetime: 1800000
+
+  flyway:
+    # CRITICAL: Prevent catastrophic accidental data drops in production
+    clean-disabled: true
+
+nats:
+  url: ${NATS_URL:nats://nats:4222}
+
+logging:
+  level:
+    root: WARN
+    com.deathstar.vader: INFO

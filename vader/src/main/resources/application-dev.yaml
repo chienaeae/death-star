@@ -1,0 +1,18 @@
+# ---------------------------------------------------------------------------
+# Development Profile (Targeting local Docker Compose infra)
+# ---------------------------------------------------------------------------
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/deathstar
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+
+nats:
+  url: nats://localhost:4222
+
+logging:
+  level:
+    com.deathstar.vader: DEBUG

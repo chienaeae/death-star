@@ -1,0 +1,46 @@
+# --- Node.js & Frontend Tooling ---
+node_modules/
+dist/
+build/
+.turbo/
+.vite/
+.next/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Java & Gradle Ecosystem ---
+.gradle/
+build/
+bin/
+out/
+vader/build/
+vader/out/
+vader/bin/
+
+# IMPORTANT: Zero-install build support
+# We MUST commit the wrapper jar/properties, but ignore the binary cache.
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# --- IDE & System Specific ---
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+Thumbs.db
+.history/
+
+# --- Environment & Secrets ---
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# --- API Contract Artifacts ---
+# Auto-generated types derived from openapi.yaml
+holocron/src/generated/

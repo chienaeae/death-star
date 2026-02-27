@@ -1,0 +1,55 @@
+# ---------------------------------------------------------------------------
+# Death Star - End-to-End (E2E) Testing Environment
+# ---------------------------------------------------------------------------
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: deathstar_e2e
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  nats:
+    image: nats:2.10-alpine
+    command: ["-m", "8222"]
+
+  vader:
+    build:
+      context: .
+      dockerfile: vader/Dockerfile
+    environment:
+      # Inject E2E profile for specific test data seeding
+      - SPRING_PROFILES_ACTIVE=e2e
+      - E2E_DB_URL=jdbc:postgresql://postgres:5432/deathstar_e2e
+      - E2E_DB_USER=postgres
+      - E2E_DB_PASSWORD=password
+      - E2E_NATS_URL=nats://nats:4222
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      # Give JVM and Spring Boot sufficient time to spin up in Docker Mac
+      start_period: 20s
+
+  skywalker:
+    build:
+      context: .
+      dockerfile: skywalker/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      vader:
+        condition: service_healthy
