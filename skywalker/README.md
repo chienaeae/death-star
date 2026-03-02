@@ -1,0 +1,59 @@
+# @death-star/skywalker
+
+Skywalker is the frontend application for the Death Star system. Currently serving as the **IAM Access Portal** and **Death Star Objectives** dashboard, it is designed to expand into a complete, feature-rich todolist dashboard for managing all operational objectives. It provides a real-time, secure interface for managing objectives and authenticating personnel.
+
+## Tech Stack
+
+This project is built with a modern frontend stack:
+- **Framework**: React 18
+- **Build Tool**: Vite
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Data Fetching & State**: TanStack React Query (`@tanstack/react-query`)
+- **Real-time Updates**: Server-Sent Events (SSE) via `@microsoft/fetch-event-source`
+- **Icons**: Lucide React
+
+## Architecture & Features
+
+### Authentication State Machine
+The application manages authentication through a robust, first-principles state machine with three explicit states:
+- `PENDING`: Initializing auth state.
+- `AUTHENTICATED`: User is logged in.
+- `UNAUTHENTICATED`: User needs to log in.
+
+### Session Management
+- **Silent Authentication**: Implements a hydration pattern. On application load (e.g., F5 refresh), it implicitly exchanges HttpOnly cookies for memory-based access tokens without user intervention.
+- **Cross-Tab Synchronization**: Utilizes the `BroadcastChannel` API (`auth_sync_channel`) to ensure that login and logout events are synchronized across all open browser tabs simultaneously.
+
+### Real-time Objectives
+The dashboard uses Server-Sent Events (SSE) via a custom `useServerEvents()` hook to maintain a persistent connection with the backend, ensuring the objectives list is updated in real-time.
+
+## Monorepo Integration
+
+Skywalker is part of the broader Death Star Turborepo monorepo. It relies on local packages:
+- `@death-star/holocron`: Shared OpenAPI schemas and types.
+- `@death-star/millennium`: Shared utilities or configurations.
+
+## Development
+
+To spin up the skywalker frontend development server, you should use the `just` command runner from the root of the monorepo:
+
+```bash
+# From the root of the monorepo
+just dev-skywalker
+```
+
+> **Note**: For full local development, you must also ensure the backend services are running (e.g., using `just dev-vader` in a separate terminal or `just dev` to run both).
+
+Skywalker's development server runs on port `3000` and proxies API requests (`/api/v1`) to the local backend on port `8080`.
+
+## Production Deployment
+
+The application is deployed using a multi-stage Docker build:
+1. **Builder Stage**: Uses Node.js and Turborepo to build the application and its local dependencies.
+2. **Server Stage**: Uses Nginx to serve the static built SPA.
+   - SPA fallback routing is configured (`try_files $uri $uri/ /index.html`).
+   - Acts as an API reverse proxy, forwarding `/api` traffic to the backend service `vader` on port `8080`.
+   - Nginx is explicitly configured to support persistent Server-Sent Events (SSE) connections by disabling proxy buffering and configuring long timeouts.
+
+

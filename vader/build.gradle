@@ -8,10 +8,12 @@ plugins {
     id 'java'
     id 'org.springframework.boot'
     id 'io.spring.dependency-management'
+
+    // Import OpenAPI Generator Plugin
+    id "org.openapi.generator" version "7.5.0"
 }
 
 java {
-    // Mandating Java 23 to enable Virtual Threads and modern language features
     sourceCompatibility = '23'
     targetCompatibility = '23'
 }
@@ -31,6 +33,7 @@ dependencies {
     
     // 3. Messaging (NATS Core Client)
     implementation 'io.nats:jnats:2.20.5'
+    
     // 4. Database Migration & Driver
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'
@@ -41,27 +44,81 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     
-    // 6. Testing
+    // --- [Phase 2] IAM & Security ---
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+    
+    // --- [OpenAPI Generation Dependencies] ---
+    implementation 'org.springframework.boot:spring-boot-starter-validation' // Provides @Valid, @NotNull annotations support
+    implementation 'io.swagger.core.v3:swagger-annotations:2.2.21'
+    implementation 'jakarta.validation:jakarta.validation-api'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
+    
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
-    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.testcontainers:postgresql'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
+
+// ---------------------------------------------------------------------------
+// OpenAPI Generator Task Configuration
+// ---------------------------------------------------------------------------
+openApiGenerate {
+    generatorName = "spring"
+    inputSpec = "$rootDir/holocron/openapi.yaml"
+    outputDir = "$buildDir/generated/openapi"
+    apiPackage = "com.deathstar.vader.api"
+    modelPackage = "com.deathstar.vader.dto.generated"
+
+    schemaMappings = [
+        "SseEmitter": "org.springframework.web.servlet.mvc.method.annotation.SseEmitter"
+    ]
+
+    importMappings = [
+        "SseEmitter": "org.springframework.web.servlet.mvc.method.annotation.SseEmitter"
+    ]
+
+    typeMappings = [
+        "SseEmitter": "org.springframework.web.servlet.mvc.method.annotation.SseEmitter"
+    ]
+    
+    configOptions = [
+        interfaceOnly: "true",
+        useSpringBoot3: "true",
+        skipDefaultInterface: "true",
+        openApiNullable: "false",
+        useTags: "true",
+        // Hack 2: Force all Controller methods to return ResponseEntity, preserving Header control
+        useResponseEntity: "true" 
+    ]
+}
+
+// Add the generated code paths to the SourceSet so Spring Boot and the compiler can pick them up
+sourceSets {
+    main {
+        java {
+            srcDirs += "$buildDir/generated/openapi/src/main/java"
+        }
+    }
+}
+
+// Ensure OpenAPI code generation runs before compilation
+compileJava.dependsOn tasks.named('openApiGenerate')
 
 tasks.named('test') {
     useJUnitPlatform()
 }
-// Optimization: Enable Layered Jars for Docker image efficiency
+
 bootJar {
     layered {
         enabled = true
     }
 }
 
-// Compile options for Java 23 (e.g., enable preview features if needed)
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    // options.compilerArgs.add('--enable-preview')
 }

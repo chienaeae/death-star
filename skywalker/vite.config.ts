@@ -8,19 +8,12 @@ export default defineConfig({
     port: 3000,
     strictPort: true,
     proxy: {
-      // Route all /api requests to the Vader backend
-      // This seamlessly resolves CORS issues during local development
-      "/api": {
+      "/api/v1": {
         target: "http://localhost:8080",
         changeOrigin: true,
         secure: false,
-      },
-      // Proxy configuration for Server-Sent Events (SSE)
-      // SSE requires long-lived connections; Vite's http-proxy handles this natively
-      "/api/v1/events": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-        secure: false,
+        // [Crucial Magic] This line is equivalent to K8s nginx.ingress.kubernetes.io/rewrite-target: /$2
+        rewrite: (path) => path.replace(/^\/api\/v1/, ""),
       },
     },
   },

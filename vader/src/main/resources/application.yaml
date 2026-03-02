@@ -10,8 +10,6 @@ spring:
     active: dev
 
   # THE CORE OF VADER PERFORMANCE:
-  # This enables Project Loom (Virtual Threads) for the entire Webstack.
-  # Tomcat will now handle each HTTP request on a lightweight virtual thread.
   threads:
     virtual:
       enabled: true
@@ -31,9 +29,14 @@ spring:
       hibernate:
         format_sql: true
 
-# Monitoring endpoints for K8s Liveness/Readiness
 management:
+  server:
+    port: 8081 # Independent ops port to prevent external traffic from accidentally hitting monitoring endpoints via Gateway
   endpoints:
     web:
       exposure:
         include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true # Enable tiered liveness/readiness probes designed specifically for K8s
