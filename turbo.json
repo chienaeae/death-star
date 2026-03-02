@@ -6,11 +6,18 @@
   ],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", "lib/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        "lib/**"
+      ]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": [
+        "^lint"
+      ]
     },
     "format": {
       "cache": false
@@ -21,19 +28,25 @@
     },
     "generate": {
       "cache": true,
-      "outputs": ["src/generated/**"]
+      "outputs": [
+        "src/generated/**"
+      ]
     },
     "@death-star/skywalker#build": {
       "dependsOn": [
         "@death-star/holocron#generate",
         "@death-star/millennium#build"
       ],
-      "outputs": ["dist/**"]
+      "outputs": [
+        "dist/**"
+      ]
     },
     "@death-star/skywalker#dev": {
       "dependsOn": [
         "@death-star/holocron#generate"
-      ]
+      ],
+      "cache": false,
+      "persistent": true
     }
   }
 }

@@ -1,140 +1,225 @@
 import type React from "react";
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiClient } from "./api/client";
 import { useServerEvents } from "./hooks/useServerEvents";
+import type { components } from "@death-star/holocron";
 
-// Import UI building blocks from our shared design system
-import { Button } from "@death-star/millennium/src/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@death-star/millennium/src/components/ui/card";
+type Todo = components["schemas"]["Todo"];
 
-/**
- * The primary orchestration component.
- * It strictly delegates UI rendering to 'millennium' and data fetching to 'api/client'.
- */
+// --- First Principles: Auth State Machine Definition ---
+type AuthState = "PENDING" | "AUTHENTICATED" | "UNAUTHENTICATED";
+
 export default function App() {
-  // 1. Initialize Real-time SSE Connection
-  // This hook will directly patch the TanStack Query cache in the background
-  // when NATS events are received from the Vader backend.
+  const [authState, setAuthState] = useState<AuthState>("PENDING");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  // --- Initialization Flow (Init Container Pattern) ---
+  useEffect(() => {
+    const initApp = async () => {
+      // Silent Renewal: On F5 refresh, automatically sends HttpOnly Cookie to fetch in-memory Access Token
+      const success = await apiClient.hydrateSession();
+      setAuthState(success ? "AUTHENTICATED" : "UNAUTHENTICATED");
+    };
+    initApp();
+
+    // Listen for cross-tab logout/sync signals (BroadcastChannel)
+    const handleAuthSync = (e: MessageEvent) => {
+      if (e.data.type === "SESSION_TERMINATED") {
+        setAuthState("UNAUTHENTICATED");
+      } else if (e.data.type === "TOKEN_REFRESHED") {
+        setAuthState("AUTHENTICATED");
+      }
+    };
+    const channel = new BroadcastChannel("auth_sync_channel");
+    channel.addEventListener("message", handleAuthSync);
+
+    return () => channel.removeEventListener("message", handleAuthSync);
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg("");
+    try {
+      await apiClient.login({ email, password });
+      setAuthState("AUTHENTICATED");
+    } catch (err: any) {
+      setErrorMsg(err.message || "Login failed");
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg("");
+    try {
+      await apiClient.register({ email, password });
+      setAuthState("AUTHENTICATED");
+    } catch (err: any) {
+      setErrorMsg(err.message || "Registration failed");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await apiClient.logout();
+    } finally {
+      setAuthState("UNAUTHENTICATED");
+    }
+  };
+
+  // --- Blocking Render ---
+  if (authState === "PENDING") {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-gray-950">
+        <div className="text-white text-xl animate-pulse">
+          Initializing Death Star Systems...
+        </div>
+      </div>
+    );
+  }
+
+  if (authState === "UNAUTHENTICATED") {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-gray-950">
+        <div className="w-full max-w-md p-8 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl">
+          <h2 className="text-2xl font-bold text-white mb-6">
+            IAM Access Portal
+          </h2>
+          {errorMsg && (
+            <div className="mb-4 p-3 bg-red-900/50 border border-red-500 text-red-200 rounded text-sm">
+              {errorMsg}
+            </div>
+          )}
+          <form className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Clearance Code (Email)
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Passphrase
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <div className="flex gap-4 pt-4">
+              <button
+                onClick={handleLogin}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors"
+              >
+                Authenticate
+              </button>
+              <button
+                onClick={handleRegister}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded transition-colors"
+              >
+                Request Access
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Authenticated Zone Business Logic ---
+  return <AuthenticatedDashboard onLogout={handleLogout} />;
+}
+
+function AuthenticatedDashboard({ onLogout }: { onLogout: () => void }) {
+  const queryClient = useQueryClient();
+  const [newTodo, setNewTodo] = useState("");
+
+  // Start SSE listener (Underlying customFetch is grouped with the token state machine)
   useServerEvents();
 
-  // 2. Local View State
-  const [newTodoTitle, setNewTodoTitle] = useState("");
-
-  // 3. Server State (Query)
-  // We rely on the SSE hook to keep this fresh. Stale time is set to infinity in main.tsx.
-  const {
-    data: todos,
-    isLoading,
-    isError,
-  } = useQuery({
+  const { data: todos, isLoading } = useQuery({
     queryKey: ["todos"],
-    queryFn: apiClient.getTodos,
+    queryFn: () => apiClient.getTodos(),
   });
 
-  // 4. Server State (Mutation)
-  const createMutation = useMutation({
-    mutationFn: apiClient.createTodo,
-    onSuccess: () => {
-      setNewTodoTitle("");
-      // Note: We deliberately DO NOT invalidate the 'todos' query here.
-      // The backend will broadcast a NATS event which our SSE hook will catch
-      // and patch the cache automatically. This is true Event-Driven UI.
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTodoTitle.trim()) return;
-    createMutation.mutate({ title: newTodoTitle });
+    if (!newTodo.trim()) return;
+    try {
+      await apiClient.createTodo({ title: newTodo });
+      setNewTodo("");
+    } catch (err) {
+      console.error("Failed to create todo", err);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-8 flex justify-center">
-      <div className="w-full max-w-2xl space-y-8">
-        <header className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">
-            Death Star Dashboard
+    <div className="min-h-screen bg-gray-950 text-gray-300 p-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-800">
+          <h1 className="text-3xl font-bold text-white">
+            Death Star Objectives
           </h1>
-          <p className="text-muted-foreground">
-            Powered by Virtual Threads, NATS, and React Query SSE Cache
-            Patching.
-          </p>
-        </header>
+          <button
+            onClick={onLogout}
+            className="px-4 py-2 text-sm font-medium text-red-400 hover:text-red-300 border border-red-900/50 hover:bg-red-900/20 rounded transition-colors"
+          >
+            Terminate Session
+          </button>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Mission Objectives</CardTitle>
-            <CardDescription>
-              Real-time synchronized across all instances.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Creation Form */}
-            <form onSubmit={handleSubmit} className="flex gap-4">
-              <input
-                type="text"
-                value={newTodoTitle}
-                onChange={(e) => setNewTodoTitle(e.target.value)}
-                placeholder="Enter new objective..."
-                className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                disabled={createMutation.isPending}
-              />
-              <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Deploying..." : "Add Objective"}
-              </Button>
-            </form>
+        <form onSubmit={handleCreate} className="mb-8 flex gap-4">
+          <input
+            type="text"
+            value={newTodo}
+            onChange={(e) => setNewTodo(e.target.value)}
+            placeholder="Assign new objective..."
+            className="flex-1 px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white focus:outline-none focus:border-blue-500"
+          />
+          <button
+            type="submit"
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+          >
+            Deploy
+          </button>
+        </form>
 
-            {/* List Rendering */}
-            <div className="space-y-4">
-              {isLoading && (
-                <p className="text-sm text-muted-foreground">
-                  Loading objectives...
-                </p>
-              )}
-              {isError && (
-                <p className="text-sm text-destructive">
-                  Failed to load objectives.
-                </p>
-              )}
+        <div className="space-y-4">
+          {isLoading && (
+            <p className="text-gray-500 animate-pulse">Scanning database...</p>
+          )}
+          {todos?.length === 0 && !isLoading && (
+            <p className="text-gray-500">No active objectives.</p>
+          )}
 
-              {todos?.length === 0 && !isLoading && (
-                <p className="text-sm text-muted-foreground">
-                  No objectives assigned.
-                </p>
-              )}
-
-              <ul className="space-y-3">
-                {todos?.map((todo) => (
-                  <li
-                    key={todo.id}
-                    className="flex items-center justify-between p-4 rounded-lg border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md"
-                  >
-                    <span
-                      className={
-                        todo.completed
-                          ? "line-through text-muted-foreground"
-                          : ""
-                      }
-                    >
-                      {todo.title}
-                    </span>
-                    {/* Timestamp helps verify the event-driven ordering visually */}
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(todo.createdAt).toLocaleTimeString()}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
+          <ul className="space-y-3">
+            {todos?.map((todo) => (
+              <li
+                key={todo.id}
+                className="flex items-center justify-between p-4 bg-gray-900 border border-gray-800 rounded-lg shadow-sm"
+              >
+                <span
+                  className={`text-lg ${todo.completed ? "line-through text-gray-600" : "text-gray-200"}`}
+                >
+                  {todo.title}
+                </span>
+                <span className="text-xs text-gray-600">
+                  {/* Defensive programming: Ensure Date parsing does not crash due to undefined */}
+                  {new Date(todo.createdAt ?? Date.now()).toLocaleString()}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );

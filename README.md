@@ -34,45 +34,25 @@ sequenceDiagram
 
 - Contract & Tooling: OpenAPI (Contract-First), Just (Command Runner), Turborepo, Gradle.
 
+## 🔀 API Routing Topology
+
+The architecture uses an API Gateway pattern to safely decouple the frontend from the backend microservices. 
+
+- **Frontend:** Makes simple request calls to semantic paths (e.g., `/api/v1`).
+- **L7 Router (Gateway):** Intercepts these requests, dynamically routes them to the correct microservice, and strips the external prefix.
+- **Backend:** Remains entirely unaware of the external network topology. It focuses purely on domain logic without hardcoded context paths.
+
+This clean separation allows for highly scalable, zero-cost microservice decomposition in the future.
+
 ## Project Structure
 
 ```plain
 │
 ├── .github/                   # CI/CD workflows and automation
-├── holocron/                  # [Contract Center] API specs and runtime type guards
-│   ├── openapi.yaml           # Single Source of Truth for API & Events
-│   ├── package.json           # Scripts for openapi-typescript generation
-│   ├── tsconfig.json          # TypeScript compilation context (noEmit)
-│   └── src/
-│       ├── index.ts           # Unified module entry point (types + guards)
-│       ├── utils/             # Runtime validation logic and constants
-│       └── generated/         # Auto-generated API types (gitignored)
-│
+├── holocron/                  # [Contract Center] API specs & TS types
 ├── vader/                     # [Backend] Java 23 / Spring WebMVC
-│   ├── build.gradle           # Backend build and dependency management
-│   └── src/main/
-│       ├── java/.../          # Controllers, Services (NATS/SSE), Repositories
-│       └── resources/
-│           ├── application*.yml # Configuration profiles (Dev, Prod, E2E)
-│           └── db/migration/    # Flyway SQL schema migrations
-│
 ├── skywalker/                 # [Frontend] Vite + React Main App
-│   ├── vite.config.ts         # Backend proxy and esbuild targets
-│   ├── tailwind.config.js     # Tailwind configuration (inherits millennium)
-│   └── src/
-│       ├── api/client.ts      # Typesafe API client using holocron types
-│       ├── hooks/             # SSE integration and cache patching hooks
-│       ├── App.tsx            # Main UI Orchestration Component
-│       └── main.tsx           # React entry point with QueryClient setup
-│
-├── millennium/                # [UI Library] Shared design system and components
-│   ├── tailwind.config.js     # Shared Tailwind presets and design tokens
-│   └── src/
-│       ├── components/ui/     # Atomic UI components (Button, Card, etc.)
-│       ├── styles/            # Design tokens (Global CSS variables)
-│       ├── lib/utils.ts       # Utility functions (Tailwind Merge, cn)
-│       └── index.ts           # Public UI exports
-│
+├── millennium/                # [UI Library] Shared design system
 ├── .gitignore                 # Global exclusion rules
 ├── biome.json                 # Global linter and formatter configuration
 ├── build.gradle               # Root Gradle project (Spotless configuration)
@@ -81,7 +61,6 @@ sequenceDiagram
 ├── turbo.json                 # Task dependency orchestration and caching
 ├── justfile                   # Unified development command center
 └── docker-compose.yml         # Local infrastructure (PostgreSQL & NATS)
-
 ```
 
 ## 📋 Prerequisites
@@ -138,19 +117,3 @@ If you encounter port conflicts, use this command to shutdown infrastructure and
 ```bash
 just stop
 ```
-
-## Holocron
-
-Holocron serves as the centralized API Contract Center and the single source of truth for the entire monorepo, managing the OpenAPI specification and providing runtime type guards to ensure strict type safety and eliminate integration drift between backend and frontend.
-
-## Vader
-
-Vader acts as the core Backend Service built on Java 23 and Spring WebMVC, utilizing Virtual Threads (Project Loom) to handle high-concurrency I/O efficiently while orchestrating data persistence and event broadcasting via NATS for real-time updates.
-
-## Skywalker
-
-Skywalker is the primary Frontend Application developed with React and Vite, featuring a highly reactive UI that achieves low-latency state synchronization by patching TanStack Query caches directly from Server-Sent Events (SSE) streams.
-
-## Millennium
-
-Millennium functions as the shared Design System and UI Library, providing atomic components and foundational Tailwind CSS tokens that ensure visual consistency and accelerate development across all frontend workspaces within the monorepo.

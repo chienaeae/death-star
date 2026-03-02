@@ -50,7 +50,7 @@ class SseBroadcasterServiceTest {
 
         service.publishEvent(event);
 
-        // 驗證是否正確透過 NATS Connection 發布到指定的 Subject
+        // Verify if properly published to the specified Subject via NATS Connection
         verify(natsConnection).publish(eq("todos.events"), eq(expectedJson));
     }
 }
