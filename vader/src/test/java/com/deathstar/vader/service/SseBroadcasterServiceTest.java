@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.deathstar.vader.domain.Todo;
 import com.deathstar.vader.dto.EventMessage;
+import com.deathstar.vader.tracing.NatsTracingPropagator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
@@ -19,18 +20,22 @@ class SseBroadcasterServiceTest {
 
     private Connection natsConnection;
     private ObjectMapper objectMapper;
+    private NatsTracingPropagator natsTracingPropagator;
     private SseBroadcasterService service;
 
     @BeforeEach
     void setUp() {
         natsConnection = mock(Connection.class);
         objectMapper = new ObjectMapper();
+        natsTracingPropagator = mock(NatsTracingPropagator.class);
 
         // Mock Dispatcher creation for @PostConstruct init()
         Dispatcher dispatcher = mock(Dispatcher.class);
         when(natsConnection.createDispatcher(any())).thenReturn(dispatcher);
 
-        service = new SseBroadcasterService(natsConnection, objectMapper);
+        when(natsTracingPropagator.injectContext()).thenReturn(new io.nats.client.impl.Headers());
+
+        service = new SseBroadcasterService(natsConnection, objectMapper, natsTracingPropagator);
         service.initSubscriber();
     }
 
@@ -51,6 +56,6 @@ class SseBroadcasterServiceTest {
         service.publishEvent(event);
 
         // Verify if properly published to the specified Subject via NATS Connection
-        verify(natsConnection).publish(eq("todos.events"), eq(expectedJson));
+        verify(natsConnection).publish(eq("todos.events"), any(io.nats.client.impl.Headers.class), eq(expectedJson));
     }
 }
