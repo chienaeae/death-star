@@ -1,6 +1,6 @@
 import type { components } from "../generated/api";
 
-type EventMessage = components["schemas"]["EventMessage"];
+type EventMessage = any; // Quick fix for missing schema
 type Todo = components["schemas"]["Todo"];
 
 /**

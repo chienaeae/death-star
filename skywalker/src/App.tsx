@@ -1,11 +1,8 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "./api/client";
 import { useServerEvents } from "./hooks/useServerEvents";
-import type { components } from "@death-star/holocron";
-
-type Todo = components["schemas"]["Todo"];
 
 // --- First Principles: Auth State Machine Definition ---
 type AuthState = "PENDING" | "AUTHENTICATED" | "UNAUTHENTICATED";
@@ -140,7 +137,7 @@ export default function App() {
 }
 
 function AuthenticatedDashboard({ onLogout }: { onLogout: () => void }) {
-  const queryClient = useQueryClient();
+
   const [newTodo, setNewTodo] = useState("");
 
   // Start SSE listener (Underlying customFetch is grouped with the token state machine)

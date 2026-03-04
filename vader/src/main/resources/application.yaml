@@ -35,8 +35,28 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        include: health,info,prometheus,metrics
   endpoint:
     health:
       probes:
         enabled: true # Enable tiered liveness/readiness probes designed specifically for K8s
+  
+  # Observability - OpenTelemetry & Micrometer
+  otlp:
+    metrics:
+      export:
+        url: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/metrics
+        step: 10s
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/traces
+  tracing:
+    sampling:
+      probability: 1.0 # 100% sampling for development/testing
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+# Application Log Pattern with Trace Injection
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"

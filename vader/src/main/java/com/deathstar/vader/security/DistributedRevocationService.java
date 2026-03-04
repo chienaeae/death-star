@@ -7,6 +7,9 @@ import io.nats.client.Dispatcher;
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
+import com.deathstar.vader.tracing.NatsTracingPropagator;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 public class DistributedRevocationService {
 
     private final Connection natsConnection;
+    private final NatsTracingPropagator natsTracingPropagator;
     private static final String REVOCATION_SUBJECT = "auth.revoked";
 
     // O(1) Local Blacklist: TTL must match JWT expiration to free memory automatically
@@ -34,21 +38,21 @@ public class DistributedRevocationService {
     public void init() {
         Dispatcher dispatcher =
                 natsConnection.createDispatcher(
-                        msg -> {
+                        msg -> natsTracingPropagator.processMessageWithTracing(msg, "receive_revocation_event", tracedMsg -> {
                             String revokedUserId =
-                                    new String(msg.getData(), StandardCharsets.UTF_8);
+                                    new String(tracedMsg.getData(), StandardCharsets.UTF_8);
                             log.warn(
                                     "[KILL SWITCH] Received revocation event for user: {}",
                                     revokedUserId);
                             revokedUsersCache.put(revokedUserId, true);
-                        });
+                        }));
         dispatcher.subscribe(REVOCATION_SUBJECT);
     }
 
     /** Broadcasts a revocation event to all Vader instances in the K8s cluster. */
     public void broadcastRevocation(String userId) {
         log.warn("[KILL SWITCH] Broadcasting revocation for user: {}", userId);
-        natsConnection.publish(REVOCATION_SUBJECT, userId.getBytes(StandardCharsets.UTF_8));
+        natsConnection.publish(REVOCATION_SUBJECT, natsTracingPropagator.injectContext(), userId.getBytes(StandardCharsets.UTF_8));
     }
 
     /** O(1) RAM lookup to check if a user's JWT should be rejected immediately. */

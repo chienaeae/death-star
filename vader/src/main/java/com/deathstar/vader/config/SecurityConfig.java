@@ -36,7 +36,7 @@ public class SecurityConfig {
                                 auth
                                         // Allow registration, login, and silent refresh
                                         .requestMatchers(
-                                                "auth/register", "auth/login", "auth/refresh")
+                                                "/auth/register", "/auth/login", "/auth/refresh")
                                         .permitAll()
                                         .requestMatchers("/actuator/**")
                                         .permitAll()

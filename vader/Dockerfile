@@ -8,6 +8,7 @@ COPY gradlew .
 COPY gradle gradle
 COPY build.gradle settings.gradle ./
 COPY vader/build.gradle vader/
+COPY holocron holocron/
 
 RUN ./gradlew :vader:dependencies --no-daemon
 
