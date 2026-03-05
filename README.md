@@ -44,6 +44,14 @@ The architecture uses an API Gateway pattern to safely decouple the frontend fro
 
 This clean separation allows for highly scalable, zero-cost microservice decomposition in the future.
 
+## 🔭 Observability Stack
+
+The `death-star` monorepo implements an **"Observation First"** architecture, unifying Traces, Metrics, and Application Logs into a single, high-performance centralized backend:
+
+- **OpenTelemetry (OTel)**: Serves as the universal standard for instrumenting the Gateway (Skywalker), the business logic (Vader), and the NATS event bus. Trace context is seamlessly propagated across HTTP and asynchronous messaging boundaries.
+- **ClickHouse**: A hyper-fast, column-oriented OLAP database used to natively ingest and store all telemetry data. We utilize native Bloom Filter data skipping indices to guarantee instant `TraceId` point lookups without full-table scans.
+- **Grafana**: Provides the single pane of glass to dashboard and query the ClickHouse observability data using standard SQL aggregations.
+
 ## Project Structure
 
 ```plain
