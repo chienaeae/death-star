@@ -116,6 +116,37 @@ paths:
                 $ref: '#/components/schemas/User'
 
   # ==========================================
+  # User Profile Routes
+  # ==========================================
+  /users/profile:
+    get:
+      tags: [Users]
+      summary: Get Current User Profile
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+    put:
+      tags: [Users]
+      summary: Update Current User Profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileRequest'
+      responses:
+        '200':
+          description: Updated user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  # ==========================================
   # Business Routes (Todos)
   # ==========================================
   /todos:
@@ -211,6 +242,30 @@ components:
         role:
           type: string
           enum: [USER, ADMIN, JEDI, SITH]
+
+    UserProfile:
+      type: object
+      properties:
+        displayName:
+          type: string
+        bio:
+          type: string
+        email:
+          type: string
+          format: email
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    UserProfileRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+        bio:
+          type: string
 
     Todo:
       type: object

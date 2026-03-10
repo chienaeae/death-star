@@ -40,3 +40,12 @@ CREATE TABLE refresh_tokens (
 CREATE INDEX idx_refresh_tokens_hash ON refresh_tokens(token_hash);
 CREATE INDEX idx_refresh_tokens_family ON refresh_tokens(family_id);
 CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens(user_id);
+
+-- 4. User Profiles Table (1-to-1 with Users, separated for clean domain boundary)
+CREATE TABLE user_profiles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    display_name VARCHAR(100),
+    bio VARCHAR(500),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
