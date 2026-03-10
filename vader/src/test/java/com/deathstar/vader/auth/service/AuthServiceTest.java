@@ -1,18 +1,16 @@
-package com.deathstar.vader.service;
+package com.deathstar.vader.auth.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-import com.deathstar.vader.domain.RefreshToken;
-import com.deathstar.vader.domain.User;
-import com.deathstar.vader.domain.UserIdentity;
-import com.deathstar.vader.repository.RefreshTokenRepository;
-import com.deathstar.vader.repository.UserIdentityRepository;
-import com.deathstar.vader.repository.UserRepository;
-import com.deathstar.vader.security.DistributedRevocationService;
-import com.deathstar.vader.security.JwtProvider;
+import com.deathstar.vader.auth.JwtProvider;
+import com.deathstar.vader.auth.RefreshToken;
+import com.deathstar.vader.auth.User;
+import com.deathstar.vader.auth.UserIdentity;
+import com.deathstar.vader.auth.repository.*;
+import com.deathstar.vader.auth.repository.UserRepository;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

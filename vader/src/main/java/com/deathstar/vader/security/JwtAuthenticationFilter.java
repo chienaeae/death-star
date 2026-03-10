@@ -1,5 +1,7 @@
 package com.deathstar.vader.security;
 
+import com.deathstar.vader.auth.*;
+import com.deathstar.vader.auth.service.DistributedRevocationService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

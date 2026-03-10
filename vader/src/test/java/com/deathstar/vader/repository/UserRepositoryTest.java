@@ -2,8 +2,10 @@ package com.deathstar.vader.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.deathstar.vader.domain.User;
+import com.deathstar.vader.auth.User;
 import java.util.Optional;
+
+import com.deathstar.vader.auth.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;

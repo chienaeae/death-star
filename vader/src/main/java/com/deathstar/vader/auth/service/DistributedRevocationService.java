@@ -1,4 +1,4 @@
-package com.deathstar.vader.security;
+package com.deathstar.vader.auth.service;
 
 import com.deathstar.vader.audit.AuditEvent;
 import com.deathstar.vader.audit.schema.ActionStatus;

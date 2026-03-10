@@ -1,4 +1,4 @@
-package com.deathstar.vader.domain;
+package com.deathstar.vader.auth;
 
 import jakarta.persistence.*;
 import java.time.ZonedDateTime;

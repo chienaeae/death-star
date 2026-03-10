@@ -1,6 +1,6 @@
-package com.deathstar.vader.repository;
+package com.deathstar.vader.auth.repository;
 
-import com.deathstar.vader.domain.RefreshToken;
+import com.deathstar.vader.auth.RefreshToken;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

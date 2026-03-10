@@ -1,4 +1,4 @@
-package com.deathstar.vader.domain;
+package com.deathstar.vader.auth;
 
 import jakarta.persistence.*;
 import java.time.ZonedDateTime;
@@ -9,11 +9,11 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
-@Table(name = "refresh_tokens")
+@Table(name = "user_identities")
 @Getter
 @Setter
 @NoArgsConstructor
-public class RefreshToken {
+public class UserIdentity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -23,26 +23,19 @@ public class RefreshToken {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "family_id", nullable = false)
-    private UUID familyId;
-
-    @Column(name = "token_hash", nullable = false, unique = true)
-    private String tokenHash;
-
-    @Column(name = "expires_at", nullable = false)
-    private ZonedDateTime expiresAt;
-
     @Column(nullable = false)
-    private boolean revoked = false;
+    private String provider; // e.g., 'LOCAL', 'GOOGLE'
+
+    @Column(name = "provider_id", nullable = false)
+    private String providerId; // Hashed password OR OIDC sub
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private ZonedDateTime createdAt;
 
-    public RefreshToken(User user, UUID familyId, String tokenHash, ZonedDateTime expiresAt) {
+    public UserIdentity(User user, String provider, String providerId) {
         this.user = user;
-        this.familyId = familyId;
-        this.tokenHash = tokenHash;
-        this.expiresAt = expiresAt;
+        this.provider = provider;
+        this.providerId = providerId;
     }
 }

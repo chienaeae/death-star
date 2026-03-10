@@ -1,12 +1,12 @@
 package com.deathstar.vader.controller;
 
 import com.deathstar.vader.api.AuthApi;
-import com.deathstar.vader.domain.User;
+import com.deathstar.vader.auth.User;
+import com.deathstar.vader.auth.service.AuthService;
 import com.deathstar.vader.dto.generated.AuthRegisterPostRequest;
 import com.deathstar.vader.dto.generated.LoginRequest;
 import com.deathstar.vader.dto.generated.TokenResponse;
-import com.deathstar.vader.repository.UserRepository;
-import com.deathstar.vader.service.AuthService;
+import com.deathstar.vader.auth.repository.UserRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;

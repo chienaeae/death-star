@@ -1,17 +1,13 @@
-package com.deathstar.vader.service;
+package com.deathstar.vader.auth.service;
 
 import com.deathstar.vader.audit.AuditEvent;
 import com.deathstar.vader.audit.schema.ActionStatus;
 import com.deathstar.vader.audit.schema.CoreResource;
 import com.deathstar.vader.audit.schema.UserAction;
-import com.deathstar.vader.domain.RefreshToken;
-import com.deathstar.vader.domain.User;
-import com.deathstar.vader.domain.UserIdentity;
-import com.deathstar.vader.repository.RefreshTokenRepository;
-import com.deathstar.vader.repository.UserIdentityRepository;
-import com.deathstar.vader.repository.UserRepository;
-import com.deathstar.vader.security.DistributedRevocationService;
-import com.deathstar.vader.security.JwtProvider;
+import com.deathstar.vader.auth.*;
+import com.deathstar.vader.auth.repository.RefreshTokenRepository;
+import com.deathstar.vader.auth.repository.UserIdentityRepository;
+import com.deathstar.vader.auth.repository.UserRepository;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

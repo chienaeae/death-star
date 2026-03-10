@@ -9,11 +9,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.deathstar.vader.auth.JwtProvider;
+import com.deathstar.vader.auth.service.DistributedRevocationService;
 import com.deathstar.vader.domain.Todo;
 import com.deathstar.vader.dto.EventMessage;
 import com.deathstar.vader.repository.TodoRepository;
-import com.deathstar.vader.security.DistributedRevocationService;
-import com.deathstar.vader.security.JwtProvider;
 import com.deathstar.vader.service.SseBroadcasterService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;

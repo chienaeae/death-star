@@ -1,4 +1,4 @@
-package com.deathstar.vader.security;
+package com.deathstar.vader.auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
