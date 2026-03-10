@@ -1,6 +1,5 @@
 package com.deathstar.vader.controller;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -110,9 +109,16 @@ class AuthControllerTest {
                 new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
                         userId.toString(),
                         null,
-                        java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER")));
+                        java.util.List.of(
+                                new org.springframework.security.core.authority
+                                        .SimpleGrantedAuthority("ROLE_USER")));
 
-        mockMvc.perform(get("/auth/me").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication(auth)))
+        mockMvc.perform(
+                        get("/auth/me")
+                                .with(
+                                        org.springframework.security.test.web.servlet.request
+                                                .SecurityMockMvcRequestPostProcessors
+                                                .authentication(auth)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId.toString()))
                 .andExpect(jsonPath("$.email").value("vader@empire.gov"))

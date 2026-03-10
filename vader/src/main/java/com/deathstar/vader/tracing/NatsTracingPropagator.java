@@ -10,10 +10,9 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapSetter;
-import org.springframework.stereotype.Component;
-
 import java.util.Collections;
 import java.util.function.Consumer;
+import org.springframework.stereotype.Component;
 
 @Component
 public class NatsTracingPropagator {
@@ -26,25 +25,27 @@ public class NatsTracingPropagator {
         this.tracer = openTelemetry.getTracer("vader-nats", "1.0.0");
     }
 
-    private static final TextMapSetter<Headers> SETTER = (headers, key, value) -> {
-        if (headers != null) {
-            headers.put(key, value);
-        }
-    };
+    private static final TextMapSetter<Headers> SETTER =
+            (headers, key, value) -> {
+                if (headers != null) {
+                    headers.put(key, value);
+                }
+            };
 
-    private static final TextMapGetter<Message> GETTER = new TextMapGetter<>() {
-        @Override
-        public Iterable<String> keys(Message message) {
-            if (message.getHeaders() == null) return Collections.emptyList();
-            return message.getHeaders().keySet();
-        }
+    private static final TextMapGetter<Message> GETTER =
+            new TextMapGetter<>() {
+                @Override
+                public Iterable<String> keys(Message message) {
+                    if (message.getHeaders() == null) return Collections.emptyList();
+                    return message.getHeaders().keySet();
+                }
 
-        @Override
-        public String get(Message message, String key) {
-            if (message.getHeaders() == null) return null;
-            return message.getHeaders().getFirst(key);
-        }
-    };
+                @Override
+                public String get(Message message, String key) {
+                    if (message.getHeaders() == null) return null;
+                    return message.getHeaders().getFirst(key);
+                }
+            };
 
     public void inject(Context context, Headers headers) {
         openTelemetry.getPropagators().getTextMapPropagator().inject(context, headers, SETTER);
@@ -57,18 +58,23 @@ public class NatsTracingPropagator {
     }
 
     public Context extract(Context context, Message message) {
-        return openTelemetry.getPropagators().getTextMapPropagator().extract(context, message, GETTER);
+        return openTelemetry
+                .getPropagators()
+                .getTextMapPropagator()
+                .extract(context, message, GETTER);
     }
 
-    public void processMessageWithTracing(Message msg, String spanName, Consumer<Message> processor) {
+    public void processMessageWithTracing(
+            Message msg, String spanName, Consumer<Message> processor) {
         Context extractedContext = extract(Context.current(), msg);
 
         try (Scope scope = extractedContext.makeCurrent()) {
-            Span span = tracer.spanBuilder(spanName)
-                    .setSpanKind(SpanKind.CONSUMER)
-                    .setAttribute("messaging.system", "nats")
-                    .setAttribute("messaging.destination", msg.getSubject())
-                    .startSpan();
+            Span span =
+                    tracer.spanBuilder(spanName)
+                            .setSpanKind(SpanKind.CONSUMER)
+                            .setAttribute("messaging.system", "nats")
+                            .setAttribute("messaging.destination", msg.getSubject())
+                            .startSpan();
 
             try (Scope spanScope = span.makeCurrent()) {
                 processor.accept(msg);

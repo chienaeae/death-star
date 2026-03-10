@@ -1,13 +1,13 @@
 package com.deathstar.vader.service;
 
 import com.deathstar.vader.dto.EventMessage;
+import com.deathstar.vader.tracing.NatsTracingPropagator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
-import com.deathstar.vader.tracing.NatsTracingPropagator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
@@ -30,7 +30,10 @@ public class SseBroadcasterService {
     // We iterate (read) to broadcast vastly more often than clients connect/disconnect (write).
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
-    public SseBroadcasterService(Connection natsConnection, ObjectMapper objectMapper, NatsTracingPropagator natsTracingPropagator) {
+    public SseBroadcasterService(
+            Connection natsConnection,
+            ObjectMapper objectMapper,
+            NatsTracingPropagator natsTracingPropagator) {
         this.natsConnection = natsConnection;
         this.objectMapper = objectMapper;
         this.natsTracingPropagator = natsTracingPropagator;
@@ -44,10 +47,14 @@ public class SseBroadcasterService {
     public void initSubscriber() {
         Dispatcher dispatcher =
                 natsConnection.createDispatcher(
-                        (msg) -> natsTracingPropagator.processMessageWithTracing(msg, "receive_todos_event", (tracedMsg) -> {
-                            String jsonPayload = new String(tracedMsg.getData());
-                            broadcastToClients(jsonPayload);
-                        }));
+                        (msg) ->
+                                natsTracingPropagator.processMessageWithTracing(
+                                        msg,
+                                        "receive_todos_event",
+                                        (tracedMsg) -> {
+                                            String jsonPayload = new String(tracedMsg.getData());
+                                            broadcastToClients(jsonPayload);
+                                        }));
         dispatcher.subscribe(SUBJECT);
         log.info("NATS subscriber initialized on subject: {}", SUBJECT);
     }

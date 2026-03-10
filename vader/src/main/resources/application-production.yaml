@@ -23,6 +23,13 @@ spring:
 nats:
   url: ${NATS_URL:nats://nats:4222}
 
+audit:
+  clickhouse:
+    jdbc-url: ${CLICKHOUSE_URL:jdbc:ch:http://clickhouse:8123/default}
+    username: ${CLICKHOUSE_USER:default}
+    password: ${CLICKHOUSE_PASSWORD:password}
+    connection-test-query: SELECT 1
+
 logging:
   level:
     root: WARN

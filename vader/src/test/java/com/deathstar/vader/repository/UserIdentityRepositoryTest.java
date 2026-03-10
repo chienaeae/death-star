@@ -33,7 +33,8 @@ class UserIdentityRepositoryTest {
         UserIdentity identity = new UserIdentity(user, "LOCAL", "hashed_password");
         userIdentityRepository.save(identity);
 
-        Optional<UserIdentity> foundIdentity = userIdentityRepository.findByUserAndProvider(user, "LOCAL");
+        Optional<UserIdentity> foundIdentity =
+                userIdentityRepository.findByUserAndProvider(user, "LOCAL");
         assertThat(foundIdentity).isPresent();
         assertThat(foundIdentity.get().getProviderId()).isEqualTo("hashed_password");
     }
@@ -46,7 +47,8 @@ class UserIdentityRepositoryTest {
         UserIdentity identity = new UserIdentity(user, "LOCAL", "hashed_password");
         userIdentityRepository.save(identity);
 
-        Optional<UserIdentity> foundIdentity = userIdentityRepository.findByUserAndProvider(user, "GOOGLE");
+        Optional<UserIdentity> foundIdentity =
+                userIdentityRepository.findByUserAndProvider(user, "GOOGLE");
         assertThat(foundIdentity).isEmpty();
     }
 }

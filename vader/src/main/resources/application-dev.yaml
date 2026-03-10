@@ -13,6 +13,13 @@ spring:
 nats:
   url: nats://localhost:4222
 
+audit:
+  clickhouse:
+    jdbc-url: jdbc:ch:http://localhost:8123/default
+    username: default
+    password: password
+    connection-test-query: SELECT 1
+
 logging:
   level:
     com.deathstar.vader: DEBUG

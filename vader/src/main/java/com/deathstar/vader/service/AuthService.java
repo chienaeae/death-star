@@ -1,5 +1,9 @@
 package com.deathstar.vader.service;
 
+import com.deathstar.vader.audit.AuditEvent;
+import com.deathstar.vader.audit.schema.ActionStatus;
+import com.deathstar.vader.audit.schema.CoreResource;
+import com.deathstar.vader.audit.schema.UserAction;
 import com.deathstar.vader.domain.RefreshToken;
 import com.deathstar.vader.domain.User;
 import com.deathstar.vader.domain.UserIdentity;
@@ -14,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.HexFormat;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +41,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final DistributedRevocationService revocationService;
+    private final org.springframework.context.ApplicationEventPublisher applicationEventPublisher;
 
     // 7 Days lifetime for Refresh Tokens
     private static final long REFRESH_TOKEN_VALIDITY_DAYS = 7;
@@ -54,6 +60,16 @@ public class AuthService {
         String hashedPassword = passwordEncoder.encode(rawPassword);
         UserIdentity identity = new UserIdentity(user, PROVIDER_LOCAL, hashedPassword);
         identityRepository.save(identity);
+
+        applicationEventPublisher.publishEvent(
+                new AuditEvent<>(
+                        this,
+                        user.getId().toString(),
+                        UserAction.USER_REGISTER,
+                        CoreResource.USER,
+                        user.getId().toString(),
+                        ActionStatus.SUCCESS,
+                        Map.of()));
 
         return issueNewSession(user);
     }
@@ -77,6 +93,16 @@ public class AuthService {
         if (!passwordEncoder.matches(rawPassword, identity.getProviderId())) {
             throw new IllegalArgumentException("Invalid credentials");
         }
+
+        applicationEventPublisher.publishEvent(
+                new AuditEvent<>(
+                        this,
+                        user.getId().toString(),
+                        UserAction.USER_LOGIN,
+                        CoreResource.USER,
+                        user.getId().toString(),
+                        ActionStatus.SUCCESS,
+                        Map.of()));
 
         return issueNewSession(user);
     }
@@ -125,6 +151,15 @@ public class AuthService {
                         token -> {
                             token.setRevoked(true);
                             refreshTokenRepository.save(token);
+                            applicationEventPublisher.publishEvent(
+                                    new AuditEvent<>(
+                                            this,
+                                            token.getUser().getId().toString(),
+                                            UserAction.USER_LOGOUT,
+                                            CoreResource.USER,
+                                            token.getFamilyId().toString(),
+                                            ActionStatus.SUCCESS,
+                                            Map.of()));
                         });
     }
 

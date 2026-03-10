@@ -18,6 +18,13 @@ spring:
 nats:
   url: ${E2E_NATS_URL:nats://localhost:4223}
 
+audit:
+  clickhouse:
+    jdbc-url: ${E2E_CLICKHOUSE_URL:jdbc:ch:http://localhost:8123/default}
+    username: ${E2E_CLICKHOUSE_USER:default}
+    password: ${E2E_CLICKHOUSE_PASSWORD:password}
+    connection-test-query: SELECT 1
+
 logging:
   level:
     root: WARN

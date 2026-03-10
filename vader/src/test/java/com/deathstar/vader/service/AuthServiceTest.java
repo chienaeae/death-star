@@ -27,6 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +44,8 @@ class AuthServiceTest {
     @Mock private JwtProvider jwtProvider;
 
     @Mock private DistributedRevocationService revocationService;
+
+    @Mock private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks private AuthService authService;
 
@@ -83,7 +86,8 @@ class AuthServiceTest {
     void register_emailAlreadyInUse() {
         when(userRepository.existsByEmail(email)).thenReturn(true);
 
-        assertThrows(IllegalArgumentException.class, () -> authService.register(email, rawPassword));
+        assertThrows(
+                IllegalArgumentException.class, () -> authService.register(email, rawPassword));
 
         verify(userRepository, never()).save(any(User.class));
         verify(identityRepository, never()).save(any(UserIdentity.class));
@@ -151,7 +155,8 @@ class AuthServiceTest {
         RefreshToken validToken = new RefreshToken(testUser, familyId, tokenHash, validExpiry);
 
         when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(validToken));
-        when(jwtProvider.generateAccessToken(anyString(), anyString())).thenReturn("new-access-token");
+        when(jwtProvider.generateAccessToken(anyString(), anyString()))
+                .thenReturn("new-access-token");
         when(jwtProvider.getExpirationSeconds()).thenReturn(3600L);
 
         AuthService.AuthResult result = authService.refresh(plainToken);
@@ -160,7 +165,8 @@ class AuthServiceTest {
         assertEquals("new-access-token", result.accessToken());
         assertTrue(validToken.isRevoked()); // the old token should be revoked
 
-        verify(refreshTokenRepository, times(2)).save(any(RefreshToken.class)); // 1 to update old, 1 to save new
+        verify(refreshTokenRepository, times(2))
+                .save(any(RefreshToken.class)); // 1 to update old, 1 to save new
     }
 
     @Test
@@ -182,7 +188,8 @@ class AuthServiceTest {
         RefreshToken revokedToken = new RefreshToken(testUser, familyId, tokenHash, validExpiry);
         revokedToken.setRevoked(true);
 
-        when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(revokedToken));
+        when(refreshTokenRepository.findByTokenHash(tokenHash))
+                .thenReturn(Optional.of(revokedToken));
 
         assertThrows(IllegalStateException.class, () -> authService.refresh(plainToken));
 
@@ -198,7 +205,8 @@ class AuthServiceTest {
         ZonedDateTime expiredTime = ZonedDateTime.now(ZoneOffset.UTC).minusDays(1);
         RefreshToken expiredToken = new RefreshToken(testUser, familyId, tokenHash, expiredTime);
 
-        when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(expiredToken));
+        when(refreshTokenRepository.findByTokenHash(tokenHash))
+                .thenReturn(Optional.of(expiredToken));
 
         assertThrows(IllegalStateException.class, () -> authService.refresh(plainToken));
 
@@ -214,7 +222,8 @@ class AuthServiceTest {
         ZonedDateTime validExpiry = ZonedDateTime.now(ZoneOffset.UTC).plusDays(1);
         RefreshToken tokenToRevoke = new RefreshToken(testUser, familyId, tokenHash, validExpiry);
 
-        when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(tokenToRevoke));
+        when(refreshTokenRepository.findByTokenHash(tokenHash))
+                .thenReturn(Optional.of(tokenToRevoke));
 
         authService.logout(plainToken);
 

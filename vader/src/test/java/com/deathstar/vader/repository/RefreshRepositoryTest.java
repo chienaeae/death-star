@@ -33,7 +33,8 @@ class RefreshRepositoryTest {
         user = userRepository.save(user);
 
         UUID familyId = UUID.randomUUID();
-        RefreshToken token = new RefreshToken(user, familyId, "hash123", ZonedDateTime.now().plusDays(1));
+        RefreshToken token =
+                new RefreshToken(user, familyId, "hash123", ZonedDateTime.now().plusDays(1));
         refreshTokenRepository.save(token);
 
         Optional<RefreshToken> foundToken = refreshTokenRepository.findByTokenHash("hash123");
@@ -47,11 +48,14 @@ class RefreshRepositoryTest {
         user = userRepository.save(user);
 
         UUID familyId = UUID.randomUUID();
-        RefreshToken token1 = new RefreshToken(user, familyId, "hash1", ZonedDateTime.now().plusDays(1));
-        RefreshToken token2 = new RefreshToken(user, familyId, "hash2", ZonedDateTime.now().plusDays(2));
-        
+        RefreshToken token1 =
+                new RefreshToken(user, familyId, "hash1", ZonedDateTime.now().plusDays(1));
+        RefreshToken token2 =
+                new RefreshToken(user, familyId, "hash2", ZonedDateTime.now().plusDays(2));
+
         UUID otherFamilyId = UUID.randomUUID();
-        RefreshToken otherToken = new RefreshToken(user, otherFamilyId, "hash3", ZonedDateTime.now().plusDays(1));
+        RefreshToken otherToken =
+                new RefreshToken(user, otherFamilyId, "hash3", ZonedDateTime.now().plusDays(1));
 
         refreshTokenRepository.save(token1);
         refreshTokenRepository.save(token2);

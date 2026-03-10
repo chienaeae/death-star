@@ -70,6 +70,9 @@ services:
       - E2E_DB_USER=postgres
       - E2E_DB_PASSWORD=password
       - E2E_NATS_URL=nats://nats:4222
+      - E2E_CLICKHOUSE_URL=jdbc:ch:http://clickhouse:8123/default
+      - E2E_CLICKHOUSE_USER=default
+      - E2E_CLICKHOUSE_PASSWORD=password
       # OpenTelemetry Endpoint points to the docker container otel-collector
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - MANAGEMENT_OTLP_METRICS_EXPORT_URL=http://otel-collector:4318/v1/metrics

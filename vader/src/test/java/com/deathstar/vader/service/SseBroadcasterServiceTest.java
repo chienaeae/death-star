@@ -56,6 +56,10 @@ class SseBroadcasterServiceTest {
         service.publishEvent(event);
 
         // Verify if properly published to the specified Subject via NATS Connection
-        verify(natsConnection).publish(eq("todos.events"), any(io.nats.client.impl.Headers.class), eq(expectedJson));
+        verify(natsConnection)
+                .publish(
+                        eq("todos.events"),
+                        any(io.nats.client.impl.Headers.class),
+                        eq(expectedJson));
     }
 }

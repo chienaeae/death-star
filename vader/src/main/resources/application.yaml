@@ -38,6 +38,7 @@ management:
         include: health,info,prometheus,metrics
   endpoint:
     health:
+      show-details: always
       probes:
         enabled: true # Enable tiered liveness/readiness probes designed specifically for K8s
   
