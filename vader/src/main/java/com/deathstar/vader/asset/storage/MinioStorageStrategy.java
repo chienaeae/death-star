@@ -1,15 +1,13 @@
 package com.deathstar.vader.asset.storage;
 
-import lombok.extern.slf4j.Slf4j;
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
-import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
+import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 @Slf4j
 public class MinioStorageStrategy implements BlobStorage {
@@ -27,23 +25,25 @@ public class MinioStorageStrategy implements BlobStorage {
     @Override
     public URL generatePresignedUploadUrl(String objectKey, String contentType, Duration ttl) {
         log.debug("Generating MinIO presigned URL for key: {}", objectKey);
-        
-        PutObjectRequest objectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(objectKey)
-                .contentType(contentType)
-                .build();
 
-        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(ttl)
-                .putObjectRequest(objectRequest)
-                .build();
+        PutObjectRequest objectRequest =
+                PutObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(objectKey)
+                        .contentType(contentType)
+                        .build();
+
+        PutObjectPresignRequest presignRequest =
+                PutObjectPresignRequest.builder()
+                        .signatureDuration(ttl)
+                        .putObjectRequest(objectRequest)
+                        .build();
 
         PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
         URL internalUrl = presignedRequest.url();
-        
+
         // Hostname mapping for Docker/Local environments
-        // Internal URL points to http://minio:9000/bucket/key 
+        // Internal URL points to http://minio:9000/bucket/key
         // We need to rewrite the authority to localhost:9000 for client direct upload
         if (publicUrl != null && !publicUrl.isBlank()) {
             return rewriteUrlForClient(internalUrl, publicUrl);
@@ -56,19 +56,40 @@ public class MinioStorageStrategy implements BlobStorage {
         try {
             // E.g. target format: http://localhost:9000 or https://minio.local
             URI overrideUri = URI.create(overrideAuthority);
-            URI newUri = new URI(
-                    overrideUri.getScheme() != null ? overrideUri.getScheme() : originalUrl.getProtocol(),
-                    null, // userInfo
-                    overrideUri.getHost(),
-                    overrideUri.getPort() != -1 ? overrideUri.getPort() : originalUrl.getPort(),
-                    originalUrl.getPath(),
-                    originalUrl.getQuery(),
-                    null // fragment
-            );
+            URI newUri =
+                    new URI(
+                            overrideUri.getScheme() != null
+                                    ? overrideUri.getScheme()
+                                    : originalUrl.getProtocol(),
+                            null, // userInfo
+                            overrideUri.getHost(),
+                            overrideUri.getPort() != -1
+                                    ? overrideUri.getPort()
+                                    : originalUrl.getPort(),
+                            originalUrl.getPath(),
+                            originalUrl.getQuery(),
+                            null // fragment
+                            );
             return newUri.toURL();
         } catch (Exception e) {
-            log.warn("Failed to rewrite MinIO URL. Falling back to internal URL {}: {}", originalUrl, e.getMessage());
+            log.warn(
+                    "Failed to rewrite MinIO URL. Falling back to internal URL {}: {}",
+                    originalUrl,
+                    e.getMessage());
             return originalUrl;
         }
+    }
+
+    @Override
+    public String getPublicUrl(String objectKey) {
+        String baseUri =
+                this.publicUrl != null && !this.publicUrl.isBlank()
+                        ? this.publicUrl
+                        : "http://localhost:9000";
+        // Ensure not duplicating trailing or preceding slashes.
+        if (baseUri.endsWith("/")) {
+            baseUri = baseUri.substring(0, baseUri.length() - 1);
+        }
+        return String.format("%s/%s/%s", baseUri, bucketName, objectKey);
     }
 }

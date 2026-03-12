@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.deathstar.vader.auth.RefreshToken;
 import com.deathstar.vader.auth.User;
-
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;

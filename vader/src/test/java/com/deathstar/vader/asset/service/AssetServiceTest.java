@@ -1,36 +1,32 @@
 package com.deathstar.vader.asset.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
 import com.deathstar.vader.asset.Asset;
 import com.deathstar.vader.asset.AssetReference;
 import com.deathstar.vader.asset.AssetStatus;
 import com.deathstar.vader.asset.repository.AssetReferenceRepository;
 import com.deathstar.vader.asset.repository.AssetRepository;
 import com.deathstar.vader.asset.storage.BlobStorage;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.Duration;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.time.Duration;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-
 class AssetServiceTest {
 
-    @Mock
-    private BlobStorage blobStorage;
-    @Mock
-    private AssetRepository assetRepository;
-    @Mock
-    private AssetReferenceRepository assetReferenceRepository;
+    @Mock private BlobStorage blobStorage;
+    @Mock private AssetRepository assetRepository;
+    @Mock private AssetReferenceRepository assetReferenceRepository;
 
     private AssetService assetService;
 
@@ -41,13 +37,15 @@ class AssetServiceTest {
     }
 
     @Test
-    void testGenerateUploadUrl_CreatesInitAssetAndReturnsPresignedUrl() throws MalformedURLException {
+    void testGenerateUploadUrl_CreatesInitAssetAndReturnsPresignedUrl()
+            throws MalformedURLException {
         UUID userId = UUID.randomUUID();
         String filename = "my doc.pdf";
         String contentType = "application/pdf";
         URL fakeUrl = new URL("http://s3/bucket/key");
 
-        when(blobStorage.generatePresignedUploadUrl(anyString(), eq(contentType), any(Duration.class)))
+        when(blobStorage.generatePresignedUploadUrl(
+                        anyString(), eq(contentType), any(Duration.class)))
                 .thenReturn(fakeUrl);
 
         URL resultUrl = assetService.generateUploadUrl(userId, filename, contentType);
@@ -63,7 +61,7 @@ class AssetServiceTest {
         assertThat(savedAsset.getMimeType()).isEqualTo(contentType);
         assertThat(savedAsset.getRefCount()).isEqualTo(0);
         // Ensure sanitize works
-        assertThat(savedAsset.getS3Key()).contains("my_doc.pdf"); 
+        assertThat(savedAsset.getS3Key()).contains("my_doc.pdf");
     }
 
     @Test

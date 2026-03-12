@@ -29,6 +29,9 @@ public class UserProfile {
     @Column(length = 500)
     private String bio;
 
+    @Column(name = "avatar_asset_id")
+    private UUID avatarAssetId;
+
     @Column(name = "updated_at", nullable = false)
     private ZonedDateTime updatedAt = ZonedDateTime.now();
 

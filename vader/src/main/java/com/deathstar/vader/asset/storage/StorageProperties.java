@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "storage")
 public class StorageProperties {
-    
+
     private String provider; // 's3' or 'minio'
     private String bucket;
     private MinioProperties minio = new MinioProperties();
@@ -18,6 +18,8 @@ public class StorageProperties {
         private String endpoint;
         private String accessKey;
         private String secretKey;
-        private String publicUrl; // The external URL used by the client for MinIO (e.g. localhost:9000 vs minio:9000)
+        private String
+                publicUrl; // The external URL used by the client for MinIO (e.g. localhost:9000 vs
+        // minio:9000)
     }
 }

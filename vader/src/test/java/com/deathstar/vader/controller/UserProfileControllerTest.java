@@ -38,8 +38,7 @@ class UserProfileControllerTest {
 
     @MockitoBean private DistributedRevocationService revocationService;
 
-    private static final UUID USER_ID =
-            UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+    private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 
     private UsernamePasswordAuthenticationToken createAuth() {
         return new UsernamePasswordAuthenticationToken(
@@ -48,24 +47,27 @@ class UserProfileControllerTest {
                 java.util.List.of(new SimpleGrantedAuthority("ROLE_USER")));
     }
 
-    private UserProfile createMockProfile(String displayName, String bio) {
+    private UserProfile createMockProfile(String displayName, String bio, UUID avatarAssetId) {
         User user = new User("vader@empire.gov");
         user.setId(USER_ID);
 
         UserProfile profile = new UserProfile(user);
         profile.setDisplayName(displayName);
         profile.setBio(bio);
+        profile.setAvatarAssetId(avatarAssetId);
         return profile;
     }
 
     @Test
     void shouldGetDefaultProfile() throws Exception {
-        UserProfile mockProfile = createMockProfile(null, null);
+        UserProfile mockProfile = createMockProfile(null, null, null);
         when(profileService.getProfile(eq(USER_ID))).thenReturn(mockProfile);
 
         mockMvc.perform(
                         get("/users/profile")
-                                .with(SecurityMockMvcRequestPostProcessors.authentication(createAuth())))
+                                .with(
+                                        SecurityMockMvcRequestPostProcessors.authentication(
+                                                createAuth())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("vader@empire.gov"))
                 .andExpect(jsonPath("$.displayName").doesNotExist())
@@ -74,17 +76,29 @@ class UserProfileControllerTest {
 
     @Test
     void shouldUpdateProfile() throws Exception {
-        UserProfile updatedProfile = createMockProfile("Darth Vader", "Dark Lord of the Sith");
-        when(profileService.updateProfile(eq(USER_ID), eq("Darth Vader"), eq("Dark Lord of the Sith")))
+        UUID mockAvatarId = UUID.randomUUID();
+        UserProfile updatedProfile =
+                createMockProfile("Darth Vader", "Dark Lord of the Sith", mockAvatarId);
+
+        when(profileService.updateProfile(
+                        eq(USER_ID),
+                        eq("Darth Vader"),
+                        eq("Dark Lord of the Sith"),
+                        eq(mockAvatarId)))
                 .thenReturn(updatedProfile);
+        when(profileService.resolveAvatarUrl(eq(mockAvatarId)))
+                .thenReturn("https://minio.local/avatar.jpg");
 
         UserProfileRequest request = new UserProfileRequest();
         request.setDisplayName("Darth Vader");
         request.setBio("Dark Lord of the Sith");
+        request.setAvatarAssetId(mockAvatarId);
 
         mockMvc.perform(
                         put("/users/profile")
-                                .with(SecurityMockMvcRequestPostProcessors.authentication(createAuth()))
+                                .with(
+                                        SecurityMockMvcRequestPostProcessors.authentication(
+                                                createAuth()))
                                 .with(
                                         org.springframework.security.test.web.servlet.request
                                                 .SecurityMockMvcRequestPostProcessors.csrf())
@@ -93,6 +107,7 @@ class UserProfileControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.displayName").value("Darth Vader"))
                 .andExpect(jsonPath("$.bio").value("Dark Lord of the Sith"))
+                .andExpect(jsonPath("$.avatarUrl").value("https://minio.local/avatar.jpg"))
                 .andExpect(jsonPath("$.email").value("vader@empire.gov"));
     }
 }

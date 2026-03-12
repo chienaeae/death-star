@@ -12,11 +12,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.deathstar.vader.auth.JwtProvider;
 import com.deathstar.vader.auth.User;
+import com.deathstar.vader.auth.repository.UserRepository;
 import com.deathstar.vader.auth.service.AuthService;
 import com.deathstar.vader.auth.service.DistributedRevocationService;
 import com.deathstar.vader.dto.generated.AuthRegisterPostRequest;
 import com.deathstar.vader.dto.generated.LoginRequest;
-import com.deathstar.vader.auth.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
 import java.util.UUID;

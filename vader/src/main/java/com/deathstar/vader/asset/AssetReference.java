@@ -1,11 +1,10 @@
 package com.deathstar.vader.asset;
 
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import lombok.*;
 
 @Entity
 @Table(name = "asset_references")

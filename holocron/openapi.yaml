@@ -272,6 +272,9 @@ components:
           type: string
         bio:
           type: string
+        avatarUrl:
+          type: string
+          format: uri
         email:
           type: string
           format: email
@@ -288,6 +291,9 @@ components:
           type: string
         bio:
           type: string
+        avatarAssetId:
+          type: string
+          format: uuid
 
     Todo:
       type: object

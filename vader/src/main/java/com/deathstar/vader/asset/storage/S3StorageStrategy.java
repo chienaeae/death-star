@@ -1,14 +1,13 @@
 package com.deathstar.vader.asset.storage;
 
+import java.net.URL;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-
-import java.net.URL;
-import java.time.Duration;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -20,19 +19,27 @@ public class S3StorageStrategy implements BlobStorage {
     @Override
     public URL generatePresignedUploadUrl(String objectKey, String contentType, Duration ttl) {
         log.debug("Generating S3 presigned URL for key: {}", objectKey);
-        
-        PutObjectRequest objectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(objectKey)
-                .contentType(contentType)
-                .build();
 
-        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(ttl)
-                .putObjectRequest(objectRequest)
-                .build();
+        PutObjectRequest objectRequest =
+                PutObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(objectKey)
+                        .contentType(contentType)
+                        .build();
+
+        PutObjectPresignRequest presignRequest =
+                PutObjectPresignRequest.builder()
+                        .signatureDuration(ttl)
+                        .putObjectRequest(objectRequest)
+                        .build();
 
         PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
         return presignedRequest.url();
+    }
+
+    @Override
+    public String getPublicUrl(String objectKey) {
+        // Assuming standard virtual-hosted-style path. Requires AWS Region mapping if specific.
+        return String.format("https://%s.s3.amazonaws.com/%s", bucketName, objectKey);
     }
 }
