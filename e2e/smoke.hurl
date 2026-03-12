@@ -45,3 +45,17 @@ HTTP 201
 jsonpath "$.id" exists
 jsonpath "$.title" == "Automated Smoke Test Objective"
 jsonpath "$.completed" == false
+
+
+# 3. Validate Asset Upload Presigned URL generation
+POST http://localhost:8080/api/v1/assets/upload-url
+Authorization: Bearer {{token}}
+Content-Type: application/json
+{
+  "filename": "hurl-test.png",
+  "contentType": "image/png"
+}
+HTTP 201
+[Asserts]
+# Validate that a presigned upload URL is returned
+jsonpath "$.uploadUrl" exists

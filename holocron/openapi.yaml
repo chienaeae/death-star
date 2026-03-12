@@ -147,6 +147,28 @@ paths:
                 $ref: '#/components/schemas/UserProfile'
 
   # ==========================================
+  # Asset Routes (Upload and Management)
+  # ==========================================
+  /assets/upload-url:
+    post:
+      tags: [Assets]
+      summary: Pre-register an asset and get a presigned upload URL
+      description: Clients must use this URL to directly PUT the file to S3/MinIO.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresignedUrlRequest'
+      responses:
+        '201':
+          description: Presigned URL generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresignedUrlResponse'
+
+  # ==========================================
   # Business Routes (Todos)
   # ==========================================
   /todos:
@@ -288,3 +310,24 @@ components:
       properties:
         title:
           type: string
+
+    PresignedUrlRequest:
+      type: object
+      required: [filename, contentType]
+      properties:
+        filename:
+          type: string
+          description: The original filename to extract extension.
+        contentType:
+          type: string
+          description: The MIME type of the file.
+
+    PresignedUrlResponse:
+      type: object
+      required: [uploadUrl, method]
+      properties:
+        uploadUrl:
+          type: string
+        method:
+          type: string
+          example: PUT

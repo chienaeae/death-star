@@ -13,6 +13,26 @@ spring:
 nats:
   url: nats://localhost:4222
 
+# Database initialization strategies
+  sql:
+    init:
+      mode: always # Ensure migrations happen rapidly on local boot
+
+# Fast-fail for developer experience
+management:
+  health:
+    db:
+      enabled: false
+
+storage:
+  provider: minio
+  bucket: deathstar-assets
+  minio:
+    endpoint: http://localhost:9000
+    accessKey: admin
+    secretKey: password
+    publicUrl: http://localhost:9000
+
 audit:
   clickhouse:
     jdbc-url: jdbc:ch:http://localhost:8123/default

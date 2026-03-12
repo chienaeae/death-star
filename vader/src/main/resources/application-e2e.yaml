@@ -29,3 +29,12 @@ logging:
   level:
     root: WARN
     com.deathstar.vader: INFO
+
+storage:
+  provider: minio
+  bucket: deathstar-assets
+  minio:
+    endpoint: ${E2E_MINIO_URL:http://localhost:9000}
+    accessKey: ${E2E_MINIO_ACCESS_KEY:admin}
+    secretKey: ${E2E_MINIO_SECRET_KEY:password}
+    publicUrl: ${E2E_MINIO_PUBLIC_URL:http://localhost:9000}
