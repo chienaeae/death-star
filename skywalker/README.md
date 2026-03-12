@@ -10,10 +10,16 @@ This project is built with a modern frontend stack:
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **Data Fetching & State**: TanStack React Query (`@tanstack/react-query`)
+- **Routing**: React Router v7 (`react-router`)
 - **Real-time Updates**: Server-Sent Events (SSE) via `@microsoft/fetch-event-source`
 - **Icons**: Lucide React
 
 ## Architecture & Features
+
+### Routing & Navigation
+The application uses **React Router v7** for standard URL-based navigation and route protection:
+- **`/auth`**: Displays the authentication portal. Redirects to `/` if the user is already authenticated.
+- **`/` (Root)**: Displays the main dashboard. Redirects to `/auth` if the user lacks a valid session.
 
 ### Authentication State Machine
 The application manages authentication through a robust, first-principles state machine with three explicit states:
@@ -41,6 +47,15 @@ To spin up the skywalker frontend development server, you should use the `just` 
 ```bash
 # From the root of the monorepo
 just dev-skywalker
+```
+
+You can also run the local build and validation commands directly within the `skywalker` directory:
+
+```bash
+cd skywalker
+npm run format
+npm run lint
+npm run build
 ```
 
 > **Note**: For full local development, you must also ensure the backend services are running (e.g., using `just dev-vader` in a separate terminal or `just dev` to run both).

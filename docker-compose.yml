@@ -60,7 +60,7 @@ services:
     image: grafana/grafana:11.3.0
     container_name: deathstar-grafana
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
