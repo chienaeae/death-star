@@ -33,7 +33,7 @@ services:
       CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
     ports:
       - "8123:8123" # HTTP UI
-      - "9000:9000" # Native port for OTel
+      - "9440:9000" # Native port for OTel
     volumes:
       - clickhouse_data:/var/lib/clickhouse
       - ./clickhouse/init-db.d:/docker-entrypoint-initdb.d
@@ -85,13 +85,14 @@ services:
     volumes:
       - minio_data:/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ["CMD", "mc", "ready", "local"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 10s
 
   minio-init:
-    image: minio/mc:RELEASE.2024-03-30T11-55-48Z
+    image: minio/mc
     container_name: deathstar-minio-init
     depends_on:
       minio:
