@@ -13,7 +13,7 @@ CREATE TABLE assets (
 
 CREATE TABLE asset_references (
     asset_id UUID NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
-    entity_type VARCHAR(50) NOT NULL, -- e.g., 'DOCUMENT', 'TODO', 'PROFILE'
+    entity_type VARCHAR(50) NOT NULL, -- e.g., 'DOCUMENT', 'PROFILE'
     entity_id VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (asset_id, entity_type, entity_id)

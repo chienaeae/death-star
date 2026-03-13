@@ -168,52 +168,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PresignedUrlResponse'
 
-  # ==========================================
-  # Business Routes (Todos)
-  # ==========================================
-  /todos:
-    get:
-      tags: [Todos]
-      summary: Get all todos
-      responses:
-        '200':
-          description: A list of todos
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Todo'
-    post:
-      tags: [Todos]
-      summary: Create a new todo
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TodoRequest'
-      responses:
-        '201':
-          description: Created todo
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Todo'
 
-  # SSE Route
-  /events:
-    get:
-      tags: [Todos]
-      summary: Subscribe to Server-Sent Events
-      description: Returns a text/event-stream for real-time updates.
-      responses:
-        '200':
-          description: SSE Stream connection established
-          content:
-            text/event-stream:
-              schema:
-                $ref: '#/components/schemas/SseEmitter'
 
 components:
   securitySchemes:
@@ -295,27 +250,7 @@ components:
           type: string
           format: uuid
 
-    Todo:
-      type: object
-      required: [id, title, completed, createdAt]
-      properties:
-        id:
-          type: string
-          format: uuid
-        title:
-          type: string
-        completed:
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
-          
-    TodoRequest:
-      type: object
-      required: [title]
-      properties:
-        title:
-          type: string
+
 
     PresignedUrlRequest:
       type: object

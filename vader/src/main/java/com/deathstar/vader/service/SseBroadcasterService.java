@@ -20,7 +20,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class SseBroadcasterService {
 
     private static final Logger log = LoggerFactory.getLogger(SseBroadcasterService.class);
-    private static final String SUBJECT = "todos.events";
+    private static final String SUBJECT = "system.events";
 
     private final Connection natsConnection;
     private final ObjectMapper objectMapper;
@@ -50,7 +50,7 @@ public class SseBroadcasterService {
                         (msg) ->
                                 natsTracingPropagator.processMessageWithTracing(
                                         msg,
-                                        "receive_todos_event",
+                                        "receive_system_event",
                                         (tracedMsg) -> {
                                             String jsonPayload = new String(tracedMsg.getData());
                                             broadcastToClients(jsonPayload);

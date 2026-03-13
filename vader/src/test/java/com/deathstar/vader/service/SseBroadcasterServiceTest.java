@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.deathstar.vader.domain.Todo;
 import com.deathstar.vader.dto.EventMessage;
 import com.deathstar.vader.tracing.NatsTracingPropagator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,7 +49,7 @@ class SseBroadcasterServiceTest {
 
     @Test
     void shouldPublishEventToNats() throws Exception {
-        var event = EventMessage.created(new Todo("Test NATS"));
+        var event = new EventMessage("SYSTEM_EVENT", "Test NATS", System.currentTimeMillis());
         var expectedJson = objectMapper.writeValueAsBytes(event);
 
         service.publishEvent(event);
@@ -58,7 +57,7 @@ class SseBroadcasterServiceTest {
         // Verify if properly published to the specified Subject via NATS Connection
         verify(natsConnection)
                 .publish(
-                        eq("todos.events"),
+                        eq("system.events"),
                         any(io.nats.client.impl.Headers.class),
                         eq(expectedJson));
     }

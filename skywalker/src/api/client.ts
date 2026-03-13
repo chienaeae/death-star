@@ -3,8 +3,7 @@
 // ---------------------------------------------------------------------------
 import type { components, paths } from '@death-star/holocron';
 
-type TodosResponse = paths['/todos']['get']['responses']['200']['content']['application/json'];
-type CreateTodoRequest = paths['/todos']['post']['requestBody']['content']['application/json'];
+
 type TokenResponse = components['schemas']['TokenResponse'];
 
 // --- FIX: Add IAM Request Type ---
@@ -191,21 +190,5 @@ export const apiClient = {
     authChannel.postMessage({ type: 'SESSION_TERMINATED' });
   },
 
-  // --- Business Methods ---
 
-  getTodos: async (): Promise<TodosResponse> => {
-    const response = await customFetch(`${GATEWAY_PREFIX}/todos`);
-    if (!response.ok) throw new Error('Failed to fetch todos');
-    return response.json();
-  },
-
-  createTodo: async (payload: CreateTodoRequest): Promise<components['schemas']['Todo']> => {
-    const response = await customFetch(`${GATEWAY_PREFIX}/todos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (!response.ok) throw new Error('Failed to create todo');
-    return response.json();
-  },
 };

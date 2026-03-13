@@ -1,6 +1,6 @@
 # @death-star/skywalker
 
-Skywalker is the frontend application for the Death Star system. Currently serving as the **IAM Access Portal** and **Death Star Objectives** dashboard, it is designed to expand into a complete, feature-rich todolist dashboard for managing all operational objectives. It provides a real-time, secure interface for managing objectives and authenticating personnel.
+Skywalker is the frontend application for the Death Star system. Currently serving as the **IAM Access Portal** and dashboard, it provides a secure interface for authenticating personnel.
 
 ## Tech Stack
 
@@ -30,9 +30,6 @@ The application manages authentication through a robust, first-principles state 
 ### Session Management
 - **Silent Authentication**: Implements a hydration pattern. On application load (e.g., F5 refresh), it implicitly exchanges HttpOnly cookies for memory-based access tokens without user intervention.
 - **Cross-Tab Synchronization**: Utilizes the `BroadcastChannel` API (`auth_sync_channel`) to ensure that login and logout events are synchronized across all open browser tabs simultaneously.
-
-### Real-time Objectives
-The dashboard uses Server-Sent Events (SSE) via a custom `useServerEvents()` hook to maintain a persistent connection with the backend, ensuring the objectives list is updated in real-time.
 
 ## Monorepo Integration
 

@@ -1,8 +1,5 @@
 import { Button } from '@death-star/millennium';
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '../api/client';
-import { ObjectiveForm } from '../features/objectives/components/ObjectiveForm';
-import { ObjectiveList } from '../features/objectives/components/ObjectiveList';
+
 import { useServerEvents } from '../hooks/useServerEvents';
 
 interface DashboardProps {
@@ -12,14 +9,7 @@ interface DashboardProps {
 export function Dashboard({ onLogout }: DashboardProps) {
   useServerEvents();
 
-  const { data: todos, isLoading } = useQuery({
-    queryKey: ['todos'],
-    queryFn: () => apiClient.getTodos(),
-  });
 
-  const handleCreateObjective = async (title: string) => {
-    await apiClient.createTodo({ title });
-  };
 
   return (
     <div className="min-h-screen p-8 pt-16">
@@ -35,8 +25,7 @@ export function Dashboard({ onLogout }: DashboardProps) {
           </Button>
         </div>
 
-        <ObjectiveForm onSubmit={handleCreateObjective} />
-        <ObjectiveList todos={todos} isLoading={isLoading} />
+
       </div>
     </div>
   );
