@@ -8,7 +8,7 @@ Vader is the core backend microservice of the Death Star architecture. It is a h
 - **Runtime**: Java 23 (Virtual Threads enabled)
 - **Database**: PostgreSQL (via Spring Data JPA)
 - **Migrations**: Flyway
-- **Messaging**: NATS Core Client
+- **Messaging**: NATS Core Client (SSE Broadcasting) & JetStream (Durable Audit Logs)
 - **Real-time API**: Server-Sent Events (SSE) via `SseEmitter`
 - **Security**: Spring Security with JWT & Caffeine caching
 - **API Contracts**: OpenAPI Generator (Contract-First approach mapping to `holocron`)
@@ -18,7 +18,7 @@ Vader is the core backend microservice of the Death Star architecture. It is a h
 Vader acts as the central data processor and broadcaster:
 1. **Handles Mutations**: Receives REST requests (e.g., POST/PUT/DELETE) from the frontend (`skywalker`).
 2. **State Persistence**: Persists changes to the PostgreSQL database.
-3. **Event Publishing**: Publishes state-change events (e.g., `TODO_CREATED`) to the NATS EventBus.
+3. **Event Publishing**: Publishes state-change events and durable records (e.g., `audit.events`) to the NATS EventBus & JetStream.
 4. **Real-time Broadcast**: Subscribes to NATS events and broadcasts them down to connected frontend clients via zero-latency Server-Sent Events (SSE).
 
 ## 🛠️ Code Generation

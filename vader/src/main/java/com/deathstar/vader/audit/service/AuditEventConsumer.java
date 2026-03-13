@@ -4,7 +4,8 @@ import com.deathstar.vader.audit.AuditEventPayload;
 import com.deathstar.vader.tracing.NatsTracingPropagator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.Connection;
-import io.nats.client.Dispatcher;
+import io.nats.client.JetStream;
+import io.nats.client.PushSubscribeOptions;
 import io.opentelemetry.api.trace.Span;
 import jakarta.annotation.PostConstruct;
 import java.time.Instant;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Component;
 public class AuditEventConsumer {
 
     private final Connection natsConnection;
+    private final JetStream jetStream;
     private final NatsTracingPropagator tracingPropagator;
     private final AuditService auditService;
     private final ObjectMapper objectMapper;
@@ -36,10 +38,12 @@ public class AuditEventConsumer {
 
     public AuditEventConsumer(
             Connection natsConnection,
+            JetStream jetStream,
             NatsTracingPropagator tracingPropagator,
             AuditService auditService,
             ObjectMapper objectMapper) {
         this.natsConnection = natsConnection;
+        this.jetStream = jetStream;
         this.tracingPropagator = tracingPropagator;
         this.auditService = auditService;
         this.objectMapper = objectMapper;
@@ -47,16 +51,21 @@ public class AuditEventConsumer {
 
     @PostConstruct
     public void init() {
-        Dispatcher dispatcher = natsConnection.createDispatcher();
-        dispatcher.subscribe(
-                "audit.events.>",
-                "audit-event-consumers",
-                msg -> {
-                    tracingPropagator.processMessageWithTracing(
-                            msg,
-                            "process_audit_event",
-                            message -> {
-                                Span currentSpan = Span.current();
+        try {
+            PushSubscribeOptions pso = PushSubscribeOptions.builder()
+                .stream("AUDIT")
+                .durable("audit-event-consumers")
+                .build();
+            
+            jetStream.subscribe(
+                    "audit.events.>",
+                    natsConnection.createDispatcher(),
+                    msg -> {
+                        tracingPropagator.processMessageWithTracing(
+                                msg,
+                                "process_audit_event",
+                                message -> {
+                                    Span currentSpan = Span.current();
                                 String traceId =
                                         currentSpan.getSpanContext().isValid()
                                                 ? currentSpan.getSpanContext().getTraceId()
@@ -90,12 +99,19 @@ public class AuditEventConsumer {
                                                     .addValue("userAgent", "vader-internal")
                                                     .addValue("metadata", payload.metadata());
 
-                                    addToBatch(params);
-                                } catch (Exception e) {
-                                    log.error("Error processing audit event", e);
-                                }
-                            });
-                });
+                                        addToBatch(params);
+                                        message.ack(); // Acknowledge successful processing
+                                    } catch (Exception e) {
+                                        log.error("Error processing audit event", e);
+                                    }
+                                });
+                    },
+                    false, // autoAck = false
+                    pso
+            );
+        } catch (Exception e) {
+            log.error("Failed to subscribe to JetStream audit events", e);
+        }
 
         // Flush buffer every 2 seconds if not reaching max batch size
         scheduler.scheduleAtFixedRate(this::flushBatch, 2, 2, TimeUnit.SECONDS);

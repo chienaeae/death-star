@@ -3,7 +3,7 @@ package com.deathstar.vader.audit.service;
 import com.deathstar.vader.audit.AuditEventPayload;
 import com.deathstar.vader.tracing.NatsTracingPropagator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.nats.client.Connection;
+import io.nats.client.JetStream;
 import io.nats.client.Message;
 import io.nats.client.impl.Headers;
 import io.nats.client.impl.NatsMessage;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class AuditEventPublisher {
-    private final Connection natsConnection;
+    private final JetStream jetStream;
     private final NatsTracingPropagator tracingPropagator;
     private final ObjectMapper objectMapper;
 
@@ -31,7 +31,7 @@ public class AuditEventPublisher {
                             .data(objectMapper.writeValueAsBytes(payload))
                             .build();
 
-            natsConnection.publish(msg);
+            jetStream.publish(msg);
             log.debug(
                     "Published audit event: action={}, actorId={}",
                     payload.action(),

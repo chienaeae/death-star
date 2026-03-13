@@ -1,6 +1,8 @@
 package com.deathstar.vader.config;
 
 import io.nats.client.Connection;
+import io.nats.client.JetStream;
+import io.nats.client.JetStreamManagement;
 import io.nats.client.Nats;
 import io.nats.client.Options;
 import java.io.IOException;
@@ -32,5 +34,14 @@ public class NatsConfig {
         Connection connection = Nats.connect(options);
         log.info("Successfully connected to NATS at {}", natsUrl);
         return connection;
+    }
+    @Bean
+    public JetStream jetStream(Connection natsConnection) throws IOException {
+        return natsConnection.jetStream();
+    }
+
+    @Bean
+    public JetStreamManagement jetStreamManagement(Connection natsConnection) throws IOException {
+        return natsConnection.jetStreamManagement();
     }
 }

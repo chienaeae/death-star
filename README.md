@@ -28,7 +28,7 @@ sequenceDiagram
 
 - Backend: Java 23, Spring Boot (WebMVC with Virtual Threads), JPA, PostgreSQL.
 
-- Messaging: NATS for inter-service events and SSE (Server-Sent Events) for real-time UI updates.
+- Messaging: NATS with JetStream for durable inter-service events (like Audit Logs) and NATS Core for ephemeral real-time UI updates (Server-Sent Events).
 
 - Frontend: React, Vite, TanStack Query (Cache Patching), Tailwind CSS.
 
