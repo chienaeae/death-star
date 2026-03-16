@@ -57,7 +57,7 @@ npm run build
 
 > **Note**: For full local development, you must also ensure the backend services are running (e.g., using `just dev-vader` in a separate terminal or `just dev` to run both).
 
-Skywalker's development server runs on port `3000` and proxies API requests (`/api/v1`) to the local backend on port `8080`.
+Skywalker's development server runs on port `5173` and proxies API requests (`/api/v1`) to the local backend on port `8080`.
 
 ## Production Deployment
 

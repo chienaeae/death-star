@@ -56,21 +56,24 @@ public class MinioStorageStrategy implements BlobStorage {
         try {
             // E.g. target format: http://localhost:9000 or https://minio.local
             URI overrideUri = URI.create(overrideAuthority);
-            URI newUri =
-                    new URI(
-                            overrideUri.getScheme() != null
-                                    ? overrideUri.getScheme()
-                                    : originalUrl.getProtocol(),
-                            null, // userInfo
-                            overrideUri.getHost(),
-                            overrideUri.getPort() != -1
-                                    ? overrideUri.getPort()
-                                    : originalUrl.getPort(),
-                            originalUrl.getPath(),
-                            originalUrl.getQuery(),
-                            null // fragment
-                            );
-            return newUri.toURL();
+
+            String originalStr = originalUrl.toString();
+            String protocol = originalUrl.getProtocol();
+            String authority = originalUrl.getAuthority();
+
+            String newProtocol =
+                    overrideUri.getScheme() != null ? overrideUri.getScheme() : protocol;
+            String newAuthority =
+                    overrideUri.getAuthority() != null ? overrideUri.getAuthority() : authority;
+
+            // Replace the start of the URL: protocol://authority (e.g., http://minio:9000)
+            String targetPrefix = protocol + "://" + authority;
+            String newPrefix = newProtocol + "://" + newAuthority;
+
+            String newUrlStr =
+                    originalStr.replaceFirst(
+                            java.util.regex.Pattern.quote(targetPrefix), newPrefix);
+            return new URL(newUrlStr);
         } catch (Exception e) {
             log.warn(
                     "Failed to rewrite MinIO URL. Falling back to internal URL {}: {}",

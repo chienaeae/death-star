@@ -29,7 +29,7 @@ public class AssetService {
      * active user's ID and original filename.
      */
     @Transactional
-    public URL generateUploadUrl(UUID userId, String filename, String contentType) {
+    public UploadInfo generateUploadUrl(UUID userId, String filename, String contentType) {
         log.info(
                 "[ASSET_INIT] Pre-registering new asset upload for user {} with file {}",
                 userId,
@@ -60,7 +60,7 @@ public class AssetService {
                 asset.getId(),
                 s3Key);
 
-        return presignedUrl;
+        return new UploadInfo(presignedUrl, asset.getId());
     }
 
     /** Links an asset to a specific entity, incrementing its reference count. */

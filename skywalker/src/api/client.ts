@@ -3,7 +3,6 @@
 // ---------------------------------------------------------------------------
 import type { components, paths } from '@death-star/holocron';
 
-
 type TokenResponse = components['schemas']['TokenResponse'];
 
 // --- FIX: Add IAM Request Type ---
@@ -189,6 +188,4 @@ export const apiClient = {
     accessToken = null;
     authChannel.postMessage({ type: 'SESSION_TERMINATED' });
   },
-
-
 };

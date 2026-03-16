@@ -265,10 +265,13 @@ components:
 
     PresignedUrlResponse:
       type: object
-      required: [uploadUrl, method]
+      required: [uploadUrl, method, assetId]
       properties:
         uploadUrl:
           type: string
         method:
           type: string
           example: PUT
+        assetId:
+          type: string
+          format: uuid

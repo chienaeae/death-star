@@ -52,11 +52,11 @@ public class AuditEventConsumer {
     @PostConstruct
     public void init() {
         try {
-            PushSubscribeOptions pso = PushSubscribeOptions.builder()
-                .stream("AUDIT")
-                .durable("audit-event-consumers")
-                .build();
-            
+            PushSubscribeOptions pso =
+                    PushSubscribeOptions.builder().stream("AUDIT")
+                            .durable("audit-event-consumers")
+                            .build();
+
             jetStream.subscribe(
                     "audit.events.>",
                     natsConnection.createDispatcher(),
@@ -66,38 +66,41 @@ public class AuditEventConsumer {
                                 "process_audit_event",
                                 message -> {
                                     Span currentSpan = Span.current();
-                                String traceId =
-                                        currentSpan.getSpanContext().isValid()
-                                                ? currentSpan.getSpanContext().getTraceId()
-                                                : "";
-                                String spanId =
-                                        currentSpan.getSpanContext().isValid()
-                                                ? currentSpan.getSpanContext().getSpanId()
-                                                : "";
+                                    String traceId =
+                                            currentSpan.getSpanContext().isValid()
+                                                    ? currentSpan.getSpanContext().getTraceId()
+                                                    : "";
+                                    String spanId =
+                                            currentSpan.getSpanContext().isValid()
+                                                    ? currentSpan.getSpanContext().getSpanId()
+                                                    : "";
 
-                                try {
-                                    AuditEventPayload payload =
-                                            objectMapper.readValue(
-                                                    message.getData(), AuditEventPayload.class);
-                                    MapSqlParameterSource params =
-                                            new MapSqlParameterSource()
-                                                    .addValue(
-                                                            "timestamp",
-                                                            java.sql.Timestamp.from(Instant.now()))
-                                                    .addValue("eventId", UUID.randomUUID())
-                                                    .addValue("traceId", traceId)
-                                                    .addValue("spanId", spanId)
-                                                    .addValue("actorId", payload.actorId())
-                                                    .addValue("action", payload.action())
-                                                    .addValue(
-                                                            "resourceType", payload.resourceType())
-                                                    .addValue("resourceId", payload.resourceId())
-                                                    .addValue("status", payload.status())
-                                                    // Simplified for demo: In production we use
-                                                    // actual IP and context retrieval
-                                                    .addValue("clientIp", "127.0.0.1")
-                                                    .addValue("userAgent", "vader-internal")
-                                                    .addValue("metadata", payload.metadata());
+                                    try {
+                                        AuditEventPayload payload =
+                                                objectMapper.readValue(
+                                                        message.getData(), AuditEventPayload.class);
+                                        MapSqlParameterSource params =
+                                                new MapSqlParameterSource()
+                                                        .addValue(
+                                                                "timestamp",
+                                                                java.sql.Timestamp.from(
+                                                                        Instant.now()))
+                                                        .addValue("eventId", UUID.randomUUID())
+                                                        .addValue("traceId", traceId)
+                                                        .addValue("spanId", spanId)
+                                                        .addValue("actorId", payload.actorId())
+                                                        .addValue("action", payload.action())
+                                                        .addValue(
+                                                                "resourceType",
+                                                                payload.resourceType())
+                                                        .addValue(
+                                                                "resourceId", payload.resourceId())
+                                                        .addValue("status", payload.status())
+                                                        // Simplified for demo: In production we use
+                                                        // actual IP and context retrieval
+                                                        .addValue("clientIp", "127.0.0.1")
+                                                        .addValue("userAgent", "vader-internal")
+                                                        .addValue("metadata", payload.metadata());
 
                                         addToBatch(params);
                                         message.ack(); // Acknowledge successful processing
@@ -107,8 +110,7 @@ public class AuditEventConsumer {
                                 });
                     },
                     false, // autoAck = false
-                    pso
-            );
+                    pso);
         } catch (Exception e) {
             log.error("Failed to subscribe to JetStream audit events", e);
         }

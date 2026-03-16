@@ -41,9 +41,18 @@ public class StorageConfig {
                 AwsBasicCredentials.create(
                         properties.getMinio().getAccessKey(), properties.getMinio().getSecretKey());
 
+        // Use public URL for presigner endpoint if configured, because AWS SDK signs the Host
+        // header based on it.
+        // It's paramount that the signature uses the same host the frontend uses (localhost:9000).
+        String presignerEndpoint =
+                properties.getMinio().getPublicUrl() != null
+                                && !properties.getMinio().getPublicUrl().isBlank()
+                        ? properties.getMinio().getPublicUrl()
+                        : properties.getMinio().getEndpoint();
+
         S3Presigner presigner =
                 S3Presigner.builder()
-                        .endpointOverride(URI.create(properties.getMinio().getEndpoint()))
+                        .endpointOverride(URI.create(presignerEndpoint))
                         .credentialsProvider(StaticCredentialsProvider.create(credentials))
                         .region(Region.US_EAST_1) // MinIO requires a generic region
                         .serviceConfiguration(

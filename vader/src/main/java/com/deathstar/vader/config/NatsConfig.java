@@ -35,6 +35,7 @@ public class NatsConfig {
         log.info("Successfully connected to NATS at {}", natsUrl);
         return connection;
     }
+
     @Bean
     public JetStream jetStream(Connection natsConnection) throws IOException {
         return natsConnection.jetStream();

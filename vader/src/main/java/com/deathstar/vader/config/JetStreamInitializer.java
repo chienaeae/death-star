@@ -33,14 +33,18 @@ public class JetStreamInitializer {
             }
 
             if (!streamExists) {
-                StreamConfiguration streamConfig = StreamConfiguration.builder()
-                        .name(AUDIT_STREAM_NAME)
-                        .subjects(AUDIT_STREAM_SUBJECTS)
-                        .storageType(StorageType.File)
-                        .build();
+                StreamConfiguration streamConfig =
+                        StreamConfiguration.builder()
+                                .name(AUDIT_STREAM_NAME)
+                                .subjects(AUDIT_STREAM_SUBJECTS)
+                                .storageType(StorageType.File)
+                                .build();
 
                 jsm.addStream(streamConfig);
-                log.info("Successfully provisioned JetStream '{}' for subjects '{}'", AUDIT_STREAM_NAME, AUDIT_STREAM_SUBJECTS);
+                log.info(
+                        "Successfully provisioned JetStream '{}' for subjects '{}'",
+                        AUDIT_STREAM_NAME,
+                        AUDIT_STREAM_SUBJECTS);
             }
         } catch (Exception e) {
             log.error("Failed to initialize JetStream '{}'", AUDIT_STREAM_NAME, e);

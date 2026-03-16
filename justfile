@@ -61,9 +61,9 @@ dev: up gen-api
 
 # Emergency stop: Shutdown local dev containers and kill processes
 stop: down
-    @echo "Cleaning up stray processes on 8080 and 3000..."
+    @echo "Cleaning up stray processes on 8080 and 5173..."
     @lsof -t -i:8080 | xargs kill -9 2>/dev/null || true
-    @lsof -t -i:3000 | xargs kill -9 2>/dev/null || true
+    @lsof -t -i:5173 | xargs kill -9 2>/dev/null || true
     @echo "All clear."
 
 # ============================================================================

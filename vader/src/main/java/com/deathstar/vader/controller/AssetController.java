@@ -2,9 +2,9 @@ package com.deathstar.vader.controller;
 
 import com.deathstar.vader.api.AssetsApi;
 import com.deathstar.vader.asset.service.AssetService;
+import com.deathstar.vader.asset.service.UploadInfo;
 import com.deathstar.vader.dto.generated.PresignedUrlRequest;
 import com.deathstar.vader.dto.generated.PresignedUrlResponse;
-import java.net.URL;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,13 +35,14 @@ public class AssetController implements AssetsApi {
         UUID userId =
                 UUID.fromString(auth.getName()); // Principle contains String UUID in our IAM logic
 
-        URL presignedUrl =
+        UploadInfo uploadInfo =
                 assetService.generateUploadUrl(
                         userId, request.getFilename(), request.getContentType());
 
         PresignedUrlResponse response = new PresignedUrlResponse();
-        response.setUploadUrl(presignedUrl.toString());
+        response.setUploadUrl(uploadInfo.url().toString());
         response.setMethod("PUT");
+        response.setAssetId(uploadInfo.assetId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

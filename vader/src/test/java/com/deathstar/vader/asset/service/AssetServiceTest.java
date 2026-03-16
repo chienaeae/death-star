@@ -48,9 +48,9 @@ class AssetServiceTest {
                         anyString(), eq(contentType), any(Duration.class)))
                 .thenReturn(fakeUrl);
 
-        URL resultUrl = assetService.generateUploadUrl(userId, filename, contentType);
+        UploadInfo uploadInfo = assetService.generateUploadUrl(userId, filename, contentType);
 
-        assertThat(resultUrl).isEqualTo(fakeUrl);
+        assertThat(uploadInfo.url()).isEqualTo(fakeUrl);
 
         ArgumentCaptor<Asset> assetCaptor = ArgumentCaptor.forClass(Asset.class);
         verify(assetRepository, times(1)).save(assetCaptor.capture());

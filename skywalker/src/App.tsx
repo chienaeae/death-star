@@ -5,6 +5,7 @@ import { AppLayout } from './components/layout/AppLayout';
 import { AuthPortal } from './features/auth/components/AuthPortal';
 import { Initializing } from './features/auth/components/Initializing';
 import { Dashboard } from './pages/Dashboard';
+import { UserProfile } from './features/profile/components/UserProfile';
 
 // --- First Principles: Auth State Machine Definition ---
 type AuthState = 'PENDING' | 'AUTHENTICATED' | 'UNAUTHENTICATED';
@@ -70,7 +71,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<AppLayout />}>
+        <Route element={<AppLayout authState={authState} onLogout={handleLogout} />}>
           <Route
             path="/auth"
             element={
@@ -89,11 +90,17 @@ export default function App() {
           <Route
             path="/"
             element={
-              authState === 'UNAUTHENTICATED' ? (
-                <Navigate to="/auth" replace />
-              ) : (
-                <Dashboard onLogout={handleLogout} />
-              )
+              authState === 'UNAUTHENTICATED' ? <Navigate to="/auth" replace /> : <Dashboard />
+            }
+          />
+          <Route
+            path="/settings"
+            element={<Navigate to="/settings/profile" replace />}
+          />
+          <Route
+            path="/settings/profile"
+            element={
+              authState === 'UNAUTHENTICATED' ? <Navigate to="/auth" replace /> : <UserProfile />
             }
           />
           <Route path="*" element={<Navigate to="/" replace />} />

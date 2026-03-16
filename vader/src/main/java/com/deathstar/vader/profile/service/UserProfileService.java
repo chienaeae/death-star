@@ -51,13 +51,12 @@ public class UserProfileService {
         profile.setUpdatedAt(ZonedDateTime.now());
 
         // Handle Avatar Linking Logic
-        if (!Objects.equals(oldAvatarAssetId, newAvatarAssetId)) {
+        // We only change the avatar if a new one is explicitly provided
+        if (newAvatarAssetId != null && !Objects.equals(oldAvatarAssetId, newAvatarAssetId)) {
             if (oldAvatarAssetId != null) {
                 assetService.unlinkAsset(oldAvatarAssetId, ENTITY_TYPE, user.getId().toString());
             }
-            if (newAvatarAssetId != null) {
-                assetService.linkAsset(newAvatarAssetId, ENTITY_TYPE, user.getId().toString());
-            }
+            assetService.linkAsset(newAvatarAssetId, ENTITY_TYPE, user.getId().toString());
             profile.setAvatarAssetId(newAvatarAssetId);
         }
 

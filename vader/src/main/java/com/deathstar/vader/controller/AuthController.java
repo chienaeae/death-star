@@ -31,7 +31,8 @@ public class AuthController implements AuthApi {
                         .httpOnly(true)
                         .secure(false)
                         .sameSite("Strict")
-                        .path("/auth")
+                        .path("/") // Fix: Make cookie available across proxy routes like
+                        // /api/v1/auth
                         .maxAge(maxAge)
                         .build();
 
