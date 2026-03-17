@@ -25,6 +25,9 @@ configurations {
 }
 
 dependencies {
+    // 0. Core Engine Integration
+    implementation project(':loom-core')
+
     // 1. Web & Virtual Threads (Spring WebMVC handles VT via configuration)
     implementation 'org.springframework.boot:spring-boot-starter-web'
     
@@ -110,6 +113,11 @@ openApiGenerate {
 }
 
 // Add the generated code paths to the SourceSet so Spring Boot and the compiler can pick them up
+tasks.named('bootRun') {
+    // Required to support Loom Scoped Values preview features during local dev
+    jvmArgs = ['--enable-preview']
+}
+
 sourceSets {
     main {
         java {
@@ -123,6 +131,7 @@ compileJava.dependsOn tasks.named('openApiGenerate')
 
 tasks.named('test') {
     useJUnitPlatform()
+    jvmArgs += ['--enable-preview']
 }
 
 bootJar {
@@ -133,4 +142,5 @@ bootJar {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    options.compilerArgs += ['--enable-preview']
 }

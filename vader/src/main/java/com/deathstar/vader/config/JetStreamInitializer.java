@@ -18,6 +18,9 @@ public class JetStreamInitializer {
     private static final String AUDIT_STREAM_NAME = "AUDIT";
     private static final String AUDIT_STREAM_SUBJECTS = "audit.events.>";
 
+    private static final String LOOM_STREAM_NAME = "LOOM";
+    private static final String LOOM_STREAM_SUBJECTS = "loom.>";
+
     @PostConstruct
     public void init() {
         try {
@@ -46,8 +49,35 @@ public class JetStreamInitializer {
                         AUDIT_STREAM_NAME,
                         AUDIT_STREAM_SUBJECTS);
             }
+
+            // Provision LOOM Stream
+            boolean loomStreamExists = false;
+            try {
+                StreamInfo loomStreamInfo = jsm.getStreamInfo(LOOM_STREAM_NAME);
+                if (loomStreamInfo != null) {
+                    loomStreamExists = true;
+                    log.info("JetStream '{}' already exists.", LOOM_STREAM_NAME);
+                }
+            } catch (Exception e) {
+                // Throws an exception if not found, we will create it
+            }
+
+            if (!loomStreamExists) {
+                StreamConfiguration streamConfig =
+                        StreamConfiguration.builder()
+                                .name(LOOM_STREAM_NAME)
+                                .subjects(LOOM_STREAM_SUBJECTS)
+                                .storageType(StorageType.File)
+                                .build();
+
+                jsm.addStream(streamConfig);
+                log.info(
+                        "Successfully provisioned JetStream '{}' for subjects '{}'",
+                        LOOM_STREAM_NAME,
+                        LOOM_STREAM_SUBJECTS);
+            }
         } catch (Exception e) {
-            log.error("Failed to initialize JetStream '{}'", AUDIT_STREAM_NAME, e);
+            log.error("Failed to initialize JetStreams", e);
         }
     }
 }

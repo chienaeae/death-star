@@ -5,3 +5,6 @@ rootProject.name = 'death-star'
 
 // Register the Spring WebMVC backend as a sub-project
 include 'vader'
+
+// Register the Loom core library as a sub-project
+include 'loom-core'

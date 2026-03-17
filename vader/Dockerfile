@@ -9,6 +9,7 @@ COPY gradle gradle
 COPY build.gradle settings.gradle ./
 COPY vader/build.gradle vader/
 COPY holocron holocron/
+COPY loom-core loom-core/
 
 RUN ./gradlew :vader:dependencies --no-daemon
 
@@ -37,4 +38,4 @@ COPY --from=builder /workspace/vader/build/extracted/application/ ./
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
+ENTRYPOINT ["java", "--enable-preview", "org.springframework.boot.loader.launch.JarLauncher"]

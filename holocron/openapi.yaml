@@ -147,6 +147,22 @@ paths:
                 $ref: '#/components/schemas/UserProfile'
 
   # ==========================================
+  # Event Handling Routes
+  # ==========================================
+  /events:
+    get:
+      tags: [Events]
+      summary: Subscribe to Server-Sent Events (SSE)
+      description: Returns a stream of real-time events.
+      responses:
+        '200':
+          description: Event stream established
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/SseEmitter'
+
+  # ==========================================
   # Asset Routes (Upload and Management)
   # ==========================================
   /assets/upload-url:
@@ -169,6 +185,166 @@ paths:
                 $ref: '#/components/schemas/PresignedUrlResponse'
 
 
+  # ==========================================
+  # Board Routes
+  # ==========================================
+  /boards:
+    get:
+      tags: [Boards]
+      summary: List Boards
+      responses:
+        '200':
+          description: A list of boards accessible by the user.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Board'
+                  
+    post:
+      tags: [Boards]
+      summary: Create a Board
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BoardCreateRequest'
+      responses:
+        '200':
+          description: Returns the created Board model.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Board'
+                  
+  /boards/{boardId}/columns:
+    post:
+      tags: [Boards]
+      summary: Create a Column
+      parameters:
+        - name: boardId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BoardColumnCreateRequest'
+      responses:
+        '200':
+          description: Returns the created Column model.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardColumn'
+                  
+  /boards/{boardId}:
+    get:
+      tags: [Boards]
+      summary: Get Board Details
+      parameters:
+        - name: boardId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The Board, including its Columns and Tasks.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Board'
+                
+  /boards/{boardId}/tasks:
+    post:
+      tags: [Boards]
+      summary: Create a Task
+      parameters:
+        - name: boardId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BoardTaskCreateRequest'
+      responses:
+        '200':
+          description: Returns the created task ID.
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /boards/{boardId}/tasks/{taskId}:
+    put:
+      tags: [Boards]
+      summary: Update a Task
+      parameters:
+        - name: boardId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BoardTaskUpdateRequest'
+      responses:
+        '200':
+          description: Task updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardTask'
+
+  /boards/{boardId}/tasks/{taskId}/move:
+    post:
+      tags: [Boards]
+      summary: Move a Task via LexRank
+      parameters:
+        - name: boardId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveTaskRequest'
+      responses:
+        '200':
+          description: Task moved successfully.
 
 components:
   securitySchemes:
@@ -275,3 +451,159 @@ components:
         assetId:
           type: string
           format: uuid
+
+    Board:
+      type: object
+      required: [id, title, tenantId, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        tenantId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoardColumn'
+
+    BoardColumn:
+      type: object
+      required: [id, boardId, title, orderIndex, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        boardId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        orderIndex:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoardTask'
+
+    BoardTask:
+      type: object
+      required: [id, type, version, status, title, lexRank]
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          description: Represents the Loom bucket routing strategy. Default is DefaultItem.
+        version:
+          type: integer
+          format: int64
+          description: Current OCC base version
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        priority:
+          type: string
+          nullable: true
+        dueDate:
+          type: string
+          format: date
+          nullable: true
+        status:
+          type: string
+          description: Correlates to a BoardColumn ID
+          format: uuid
+        lexRank:
+          type: string
+          description: The LexRank split-point used for UI ordering.
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom dynamic attributes for this task.
+
+    BoardTaskUpdateRequest:
+      type: object
+      required: [currentVersion]
+      properties:
+        currentVersion:
+          type: integer
+          format: int64
+          description: Current OCC base version
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        priority:
+          type: string
+          nullable: true
+        dueDate:
+          type: string
+          format: date
+          nullable: true
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom attributes to merge or update.
+
+    BoardTaskCreateRequest:
+      type: object
+      required: [title, status]
+      properties:
+        title:
+          type: string
+        status:
+          type: string
+          description: The ID of the BoardColumn to place this task into.
+          format: uuid
+
+    BoardCreateRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+
+    BoardColumnCreateRequest:
+      type: object
+      required: [title, orderIndex]
+      properties:
+        title:
+          type: string
+        orderIndex:
+          type: integer
+          format: int32
+          
+    MoveTaskRequest:
+      type: object
+      required: [newStatusId, currentVersion]
+      properties:
+        currentVersion:
+          type: integer
+          format: int64
+          description: Current OCC base version
+        newStatusId:
+          type: string
+          description: The ID of the BoardColumn to move this task into.
+          format: uuid
+        prevLexRank:
+          type: string
+          nullable: true
+          description: The LexRank of the task immediately above the new position (null if top).
+        nextLexRank:
+          type: string
+          nullable: true
+          description: The LexRank of the task immediately below the new position (null if bottom).

@@ -6,6 +6,7 @@ import { AuthPortal } from './features/auth/components/AuthPortal';
 import { Initializing } from './features/auth/components/Initializing';
 import { Dashboard } from './pages/Dashboard';
 import { UserProfile } from './features/profile/components/UserProfile';
+import { BoardView } from './features/board/components/BoardView';
 
 // --- First Principles: Auth State Machine Definition ---
 type AuthState = 'PENDING' | 'AUTHENTICATED' | 'UNAUTHENTICATED';
@@ -91,6 +92,12 @@ export default function App() {
             path="/"
             element={
               authState === 'UNAUTHENTICATED' ? <Navigate to="/auth" replace /> : <Dashboard />
+            }
+          />
+          <Route
+            path="/boards/:boardId"
+            element={
+              authState === 'UNAUTHENTICATED' ? <Navigate to="/auth" replace /> : <BoardView />
             }
           />
           <Route

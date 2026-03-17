@@ -26,4 +26,19 @@ public class PrimaryDatabaseConfig {
                 .type(HikariDataSource.class)
                 .build();
     }
+
+    @Bean
+    @Primary
+    public org.springframework.jdbc.core.JdbcTemplate jdbcTemplate(
+            javax.sql.DataSource primaryDataSource) {
+        return new org.springframework.jdbc.core.JdbcTemplate(primaryDataSource);
+    }
+
+    @Bean
+    @Primary
+    public org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+            namedParameterJdbcTemplate(org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
+        return new org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate(
+                jdbcTemplate);
+    }
 }
