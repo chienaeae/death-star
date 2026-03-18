@@ -176,22 +176,22 @@ export function BoardView() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white relative animate-in fade-in duration-500">
+    <div className="flex flex-col flex-1 bg-transparent relative animate-in fade-in duration-500">
       {/* Board Header */}
-      <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-white/50 backdrop-blur-md sticky top-0 z-10">
+      <div className="px-6 py-4 flex items-center justify-between bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => navigate('/boards')}
-            className="p-2 -ml-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors"
+            className="p-2 -ml-2 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h2 className="text-xl font-bold text-gray-800">{board.title}</h2>
+          <h2 className="text-xl font-bold text-foreground tracking-tight">{board.title}</h2>
         </div>
       </div>
 
       {/* Board Canvas (Horizontal Scroll) */}
-      <div className="flex-1 overflow-x-auto overflow-y-hidden p-6">
+      <div className="flex-1 overflow-x-auto overflow-y-hidden p-6 scrollbar-auto-hide">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCorners}
@@ -212,11 +212,11 @@ export function BoardView() {
               {isAddingCol ? (
                 <form 
                   onSubmit={handleCreateColumn}
-                  className="bg-gray-100/80 rounded-xl p-3 border border-gray-200 shadow-sm"
+                  className="bg-muted/40 rounded-xl p-3 border border-border shadow-sm"
                 >
                   <input
                     autoFocus
-                    className="w-full text-sm font-medium outline-none bg-white p-2 border border-primary/50 rounded flex-shrink-0 focus:ring-2 focus:ring-primary/20 transition-shadow"
+                    className="w-full text-sm font-medium outline-none bg-background text-foreground placeholder-muted-foreground p-2 border border-border/50 rounded flex-shrink-0 focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                     placeholder="Column title"
                     value={newColTitle}
                     onChange={(e) => setNewColTitle(e.target.value)}
@@ -226,14 +226,14 @@ export function BoardView() {
                     <button
                       type="button"
                       onClick={() => setIsAddingCol(false)}
-                      className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 font-medium"
+                      className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 font-medium transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={!newColTitle.trim() || createColumnMutation.isPending}
-                      className="text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 disabled:opacity-50 font-medium tracking-wide"
+                      className="text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 disabled:opacity-50 font-medium tracking-wide transition-colors"
                     >
                       {createColumnMutation.isPending ? 'Saving...' : 'Save Column'}
                     </button>
@@ -242,9 +242,9 @@ export function BoardView() {
               ) : (
                 <button
                   onClick={() => setIsAddingCol(true)}
-                  className="w-full flex items-center gap-2 p-3 rounded-xl bg-gray-50/50 hover:bg-gray-100 border-2 border-dashed border-gray-200 hover:border-gray-300 text-gray-500 hover:text-gray-700 font-medium transition-all group"
+                  className="w-full flex items-center gap-2 p-3 rounded-xl bg-muted/20 hover:bg-muted/50 border-2 border-dashed border-border hover:border-primary/50 text-muted-foreground hover:text-foreground font-medium transition-all duration-300 group"
                 >
-                  <div className="p-1 rounded bg-white shadow-sm group-hover:scale-105 transition-transform text-gray-400 group-hover:text-gray-600">
+                  <div className="p-1 rounded bg-background shadow-sm border border-border/50 group-hover:scale-110 transition-transform duration-300 text-muted-foreground group-hover:text-primary">
                     <Plus className="w-4 h-4" />
                   </div>
                   Add new column

@@ -8,4 +8,31 @@
   .flex-center {
     @apply flex items-center justify-center;
   }
+
+  /* Custom auto-hiding scrollbar for horizontal/vertical scrolling */
+  .scrollbar-auto-hide {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+  .scrollbar-auto-hide:hover {
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
+  
+  .scrollbar-auto-hide::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+  .scrollbar-auto-hide::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-auto-hide::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 10px;
+  }
+  .scrollbar-auto-hide:hover::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30;
+  }
+  .scrollbar-auto-hide::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/60;
+  }
 }

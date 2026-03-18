@@ -41,25 +41,25 @@ export function Topbar({ onLogout, title = 'Death Star Objectives' }: TopbarProp
 
         {/* Dropdown Panel */}
         {dropdownOpen && (
-          <div className="absolute top-12 right-0 w-56 bg-white border border-gray-100 rounded-xl shadow-lg shadow-gray-200/50 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+          <div className="absolute top-12 right-0 w-56 bg-popover border border-border rounded-xl shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-2">
             <Link
               to="/settings/profile"
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-popover-foreground hover:bg-muted transition-colors"
               onClick={() => setDropdownOpen(false)}
             >
-              <Settings className="w-4 h-4 text-gray-400" />
+              <Settings className="w-4 h-4 text-muted-foreground" />
               Account Settings
             </Link>
-            <div className="h-px bg-gray-100 my-1 mx-2"></div>
+            <div className="h-px bg-border my-1 mx-2"></div>
             <button
               type="button"
               onClick={() => {
                 setDropdownOpen(false);
                 onLogout();
               }}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
             >
-              <LogOut className="w-4 h-4 text-red-400" />
+              <LogOut className="w-4 h-4 text-destructive" />
               Logout
             </button>
           </div>

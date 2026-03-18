@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from 'react-router';
 import { Topbar } from './Topbar';
+import { Particles } from './Particles';
 
 interface AppLayoutProps {
   authState?: 'PENDING' | 'AUTHENTICATED' | 'UNAUTHENTICATED';
@@ -12,11 +13,14 @@ export function AppLayout({ authState, onLogout }: AppLayoutProps) {
   const showTopbar = authState === 'AUTHENTICATED' && !isAuthPage && !!onLogout;
 
   return (
-    <div className="min-h-screen w-full bg-background bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-muted/50 via-background to-background font-sans antialiased text-foreground flex flex-col">
+    <div className="min-h-screen w-full bg-background font-sans antialiased text-foreground flex flex-col relative z-0 overflow-hidden">
+      {/* Dynamic Particle Fragments */}
+      <Particles />
+
       {showTopbar && <Topbar onLogout={onLogout!} />}
-      <div className="flex-1 w-full relative">
+      <main className="flex-1 flex flex-col w-full relative">
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 }

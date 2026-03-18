@@ -28,7 +28,7 @@ export function AuthPortal({ errorMsg, setErrorMsg, onLogin, onRegister }: AuthP
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] w-full items-center justify-center p-4">
-      <Card className="w-[400px] rounded-3xl border bg-card text-card-foreground shadow-xl">
+      <Card className="w-[400px] rounded-3xl border border-border bg-background/70 backdrop-blur-2xl text-card-foreground shadow-2xl">
         <CardHeader className="flex flex-col items-center pt-8 pb-4">
           <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted shadow-sm border border-border">
             <LogIn className="h-7 w-7 text-muted-foreground" strokeWidth={2} />

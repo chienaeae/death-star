@@ -52,11 +52,11 @@ export function BoardList() {
         {isCreating ? (
           <form 
             onSubmit={handleCreate}
-            className="flex flex-col justify-center h-32 p-4 bg-white border-2 border-dashed border-primary/50 shadow-sm rounded-xl space-y-3"
+            className="flex flex-col justify-center h-32 p-4 bg-muted/60 backdrop-blur-xl border-2 border-dashed border-primary/50 shadow-sm rounded-xl space-y-3"
           >
             <input
               autoFocus
-              className="text-sm font-medium w-full bg-transparent outline-none border-b border-gray-200 pb-1 px-1 focus:border-primary transition-colors"
+              className="text-sm font-medium w-full bg-transparent outline-none border-b border-border pb-1 px-1 focus:border-primary transition-colors text-card-foreground"
               placeholder="Board title..."
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
@@ -73,7 +73,7 @@ export function BoardList() {
               <button
                 type="submit"
                 disabled={!newTitle.trim() || createBoardMutation.isPending}
-                className="text-xs px-3 py-1.5 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 disabled:opacity-50"
+                className="text-xs px-3 py-1.5 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
               >
                 {createBoardMutation.isPending ? 'Saving...' : 'Create'}
               </button>
@@ -82,12 +82,12 @@ export function BoardList() {
         ) : (
           <button
             onClick={() => setIsCreating(true)}
-            className="flex flex-col items-center justify-center h-32 bg-gray-50 hover:bg-gray-100 border-2 border-dashed border-gray-200 hover:border-gray-300 rounded-xl transition-all group"
+            className="flex flex-col items-center justify-center h-32 bg-muted/40 backdrop-blur-xl border-2 border-dashed border-border rounded-xl hover:bg-muted/60 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
           >
-            <div className="h-10 w-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-              <Plus className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+            <div className="h-10 w-10 rounded-full bg-background shadow-sm flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300">
+              <Plus className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
-            <span className="text-sm font-medium text-gray-500 group-hover:text-gray-700">
+            <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
               Create new board
             </span>
           </button>
@@ -98,13 +98,13 @@ export function BoardList() {
           <button
             key={board.id}
             onClick={() => navigate(`/boards/${board.id}`)}
-            className="flex flex-col items-start h-32 p-5 bg-white border border-gray-200 rounded-xl hover:border-primary/50 hover:shadow-md transition-all group text-left relative overflow-hidden"
+            className="flex flex-col items-start h-32 p-5 bg-background/70 backdrop-blur-xl border border-border rounded-xl hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group text-left relative overflow-hidden"
           >
             {/* Subtle Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             
             <KanbanSquare className="w-6 h-6 text-primary mb-3 relative z-10" />
-            <span className="font-semibold text-gray-800 line-clamp-1 relative z-10 group-hover:text-primary transition-colors hover:cursor-pointer">
+            <span className="font-semibold text-card-foreground line-clamp-1 relative z-10 group-hover:text-primary transition-colors hover:cursor-pointer">
               {board.title}
             </span>
           </button>

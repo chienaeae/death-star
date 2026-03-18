@@ -37,7 +37,7 @@ export function TaskCard(props: TaskCardProps) {
       <div 
         ref={setNodeRef}
         style={style}
-        className="opacity-50 min-h-[80px] bg-white border-2 border-primary border-dashed rounded-lg p-3 shadow-sm"
+        className="opacity-60 scale-105 min-h-[80px] bg-background border-2 border-primary border-dashed rounded-xl p-3 shadow-2xl z-50 ring-2 ring-primary/20 backdrop-blur-sm"
       />
     );
   }
@@ -47,14 +47,14 @@ export function TaskCard(props: TaskCardProps) {
       ref={setNodeRef}
       style={style}
       onClick={props.onClick}
-      className={`group relative bg-white border border-gray-200 rounded-lg p-3 pr-8 shadow-sm hover:shadow hover:border-gray-300 transition-all cursor-grab active:cursor-grabbing`}
+      className={`group relative bg-card border border-border rounded-lg p-3 pr-8 shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-200 cursor-grab active:cursor-grabbing hover:-translate-y-[1px]`}
       {...attributes}
       {...listeners}
     >
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
         <GripVertical className="w-4 h-4" />
       </div>
-      <p className="text-sm font-medium text-gray-700 leading-snug">
+      <p className="text-sm font-medium text-card-foreground leading-snug">
         {task.title}
       </p>
     </div>

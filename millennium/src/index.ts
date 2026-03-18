@@ -10,6 +10,7 @@ export * from './components/ui/button';
 export * from './components/ui/card';
 export * from './components/ui/input';
 export * from './components/ui/label';
+export * from './components/ui/drawer';
 
 // Note: The global CSS variables (src/styles/globals.css) are NOT exported here.
 // Consuming applications must import the CSS file directly in their bundler
