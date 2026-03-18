@@ -6,22 +6,53 @@ Death Star is a high-performance microservices reference architecture designed f
 
 ## 🏗 Architecture Flow
 
-The following diagram illustrates the event-driven data flow leveraging NATS and Server-Sent Events (SSE) for zero-latency UI updates.
+Death Star uses a custom engine called **Loom** to manage data. Instead of saving data directly to the database, Loom records every change as a timeline of events using **Event Sourcing** and **CQRS (Command Query Responsibility Segregation)**, powered by NATS JetStream and PostgreSQL.
 
+This gives us a perfect history of all changes and allows the system to be highly scalable. The data flows through 5 simple steps:
+
+1. **Intent (User Action):** The user performs an action in the app (like updating a Task Title). The server translates this into an `Event` request.
+2. **Validate (Check for Conflicts):** The `LoomEngine` checks if the user is editing the latest version of the data. If the user's screen is outdated, it blocks the change. Otherwise, it allows it.
+3. **Journal (Save the Event):** The approved `Event` is permanently saved to the **NATS JetStream Event Store**. This append-only log is the system's absolute source of truth.
+4. **Projection (Update the Database):** In the background, workers listen to the Event Store and continuously update the PostgreSQL database tables so they reflect the latest data.
+5. **Query (Read the Data):** When the user loads a page, the app reads directly from the fast, updated PostgreSQL database without dealing with the complex Event Store.
 
 ```mermaid
-sequenceDiagram
-    participant User (Skywalker)
-    participant Backend (Vader)
-    participant DB (PostgreSQL)
-    participant EventBus (NATS)
-
-    User (Skywalker)->>Backend (Vader): POST /api/v1/todos (Mutation)
-    Backend (Vader)->>DB (PostgreSQL): Save State
-    Backend (Vader)->>EventBus (NATS): Publish EVENT (TODO_CREATED)
-    EventBus (NATS)-->>Backend (Vader): Dispatch to Subscribers
-    Backend (Vader)-->>User (Skywalker): Broadcast via SSE (Server-Sent Events)
-    Note over User (Skywalker): React Query Cache Patched<br/>(No full refetch required)
+flowchart TD
+    Client((Skywalker Client))
+    
+    subgraph Command Side [Write Model]
+        API[REST Controller]
+        Domain[Domain Service]
+        Loom["Loom Engine (OCC Check)"]
+    end
+    
+    Ledger[(NATS JetStream<br/>Event Store)]
+    
+    subgraph Projection Side [Read Model Worker]
+        Worker[JetStream Consumer]
+        Repo[State Repository]
+    end
+    
+    DB[(PostgreSQL<br/>Read Model)]
+    
+    Client -- 1. Intent (POST/PUT) --> API
+    API --> Domain
+    Domain -- 2. Validate --> Loom
+    Loom -- 3. Journal (Append) --> Ledger
+    
+    Ledger -- 4. Project (Async) --> Worker
+    Worker --> Repo
+    Repo -- SQL CAS Update --> DB
+    
+    Client -- 5. Query (GET) --> DB
+    
+    classDef write stroke:#ff7043,stroke-width:2px;
+    classDef read stroke:#42a5f5,stroke-width:2px;
+    classDef store fill:#f3e5f5,stroke:#ab47bc,stroke-width:2px;
+    
+    class API,Domain,Loom write;
+    class Worker,Repo,DB read;
+    class Ledger store;
 ```
 
 ## Core Tech Stack
