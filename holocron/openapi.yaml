@@ -147,6 +147,41 @@ paths:
                 $ref: '#/components/schemas/UserProfile'
 
   # ==========================================
+  # Field Definition Routes
+  # ==========================================
+  /tasks/fields:
+    get:
+      tags: [Task Fields]
+      summary: Get all Field Definitions
+      description: Returns all configured fields (system and custom) for the current tenant.
+      responses:
+        '200':
+          description: A list of field definitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskFieldDefinition'
+    post:
+      tags: [Task Fields]
+      summary: Create a newly defined Custom Field
+      description: Allows users to create dynamic custom fields for their workspace.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskFieldDefinitionRequest'
+      responses:
+        '201':
+          description: Field created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskFieldDefinition'
+
+  # ==========================================
   # Event Handling Routes
   # ==========================================
   /events:
@@ -378,6 +413,57 @@ components:
           type: string
         expiresIn:
           type: integer
+          format: int64
+
+    AuthResponse:
+      type: object
+      required:
+        - token
+        - user
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+
+    FieldType:
+      type: string
+      enum: [LEXRANK, STATUS, LONG_TEXT, MARKDOWN, STRING, INTEGER, BOOLEAN]
+      
+    BucketType:
+      type: string
+      enum: [DYNAMIC, STATIC]
+
+    TaskFieldDefinition:
+      type: object
+      required:
+        - id
+        - name
+        - fieldType
+        - bucketType
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        fieldType:
+          $ref: '#/components/schemas/FieldType'
+        bucketType:
+          $ref: '#/components/schemas/BucketType'
+
+    TaskFieldDefinitionRequest:
+      type: object
+      required:
+        - name
+        - fieldType
+      properties:
+        name:
+          type: string
+        fieldType:
+          $ref: '#/components/schemas/FieldType'
+        bucketType:
+          $ref: '#/components/schemas/BucketType'
           format: int64
 
     User:

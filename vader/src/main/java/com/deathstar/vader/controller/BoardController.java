@@ -106,10 +106,8 @@ public class BoardController implements BoardsApi {
                                                                                                 .getId()))
                                                         .sorted(
                                                                 java.util.Comparator.comparing(
-                                                                        com.deathstar.vader.dto
-                                                                                        .generated
-                                                                                        .BoardTask
-                                                                                ::getLexRank))
+                                                                        com.deathstar.vader.dto.generated.BoardTask::getLexRank,
+                                                                        java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())))
                                                         .toList();
                                         dtoCol.setTasks(colTasks);
                                         return dtoCol;

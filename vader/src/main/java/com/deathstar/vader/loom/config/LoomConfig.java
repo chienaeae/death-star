@@ -30,56 +30,5 @@ public class LoomConfig {
                 natsStore, pgRepo, identityResolver, fieldRegistry, Collections.emptyList());
     }
 
-    @Bean
-    public FieldRegistry inMemoryFieldRegistry() {
-        return new FieldRegistry() {
-            @Override
-            public FieldDefinition getField(UUID fieldId) {
-                // Hardcoded registry for mock implementation.
-                // In production, this would likely be cached from a meta-database.
-                if (FieldConstants.STATUS_ID.equals(fieldId)) {
-                    return new FieldDefinition(
-                            fieldId,
-                            "Status",
-                            FieldDefinition.FieldType.STATUS,
-                            BucketType.DYNAMIC);
-                }
-                if (FieldConstants.LEXRANK_ID.equals(fieldId)) {
-                    return new FieldDefinition(
-                            fieldId,
-                            "LexRank",
-                            FieldDefinition.FieldType.LEXRANK,
-                            BucketType.DYNAMIC);
-                }
-                if (FieldConstants.TITLE_ID.equals(fieldId)) {
-                    return new FieldDefinition(
-                            fieldId, "Title", FieldDefinition.FieldType.STRING, BucketType.STATIC);
-                }
-                if (FieldConstants.DESCRIPTION_ID.equals(fieldId)) {
-                    return new FieldDefinition(
-                            fieldId,
-                            "Description",
-                            FieldDefinition.FieldType.STRING,
-                            BucketType.STATIC);
-                }
-                if (FieldConstants.PRIORITY_ID.equals(fieldId)) {
-                    return new FieldDefinition(
-                            fieldId,
-                            "Priority",
-                            FieldDefinition.FieldType.STRING,
-                            BucketType.STATIC);
-                }
-                if (FieldConstants.DUE_DATE_ID.equals(fieldId)) {
-                    return new FieldDefinition(
-                            fieldId,
-                            "DueDate",
-                            FieldDefinition.FieldType.STRING,
-                            BucketType.STATIC);
-                }
-                // Default fallback
-                return new FieldDefinition(
-                        fieldId, "Unknown", FieldDefinition.FieldType.STRING, BucketType.STATIC);
-            }
-        };
-    }
+
 }

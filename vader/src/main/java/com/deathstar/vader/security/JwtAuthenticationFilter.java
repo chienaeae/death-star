@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.deathstar.vader.loom.spi.ScopedValueIdentityResolver;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -65,7 +66,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.error("Could not set user authentication in security context", ex);
         }
 
-        filterChain.doFilter(request, response);
+        // If authenticated, wrap the remainder of the request in the ScopedValue
+        org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken)) {
+            String authenticatedUserId = auth.getName();
+            try {
+                java.lang.ScopedValue.where(ScopedValueIdentityResolver.USER_ID, authenticatedUserId)
+                        .where(ScopedValueIdentityResolver.TENANT_ID, authenticatedUserId)
+                        .run(() -> {
+                            try {
+                                filterChain.doFilter(request, response);
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+            } catch (RuntimeException e) {
+                if (e.getCause() instanceof ServletException) {
+                    throw (ServletException) e.getCause();
+                } else if (e.getCause() instanceof IOException) {
+                    throw (IOException) e.getCause();
+                }
+                throw e;
+            }
+        } else {
+            filterChain.doFilter(request, response);
+        }
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {

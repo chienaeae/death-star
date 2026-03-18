@@ -47,14 +47,16 @@ public class LoomEngine {
         long currentVersion = stateRepository.getCurrentVersion(itemId);
 
         // For this hybrid system, we allow baseVersion 1 (item creation intent) or strict OCC
-        if (currentVersion != 0 && currentVersion != baseVersion) {
+        // Because of CQRS, currentVersion might lag behind baseVersion during bulk synchronous updates.
+        // However, if baseVersion < currentVersion, we strictly KNOW the client has a stale view.
+        if (currentVersion != 0 && baseVersion < currentVersion) {
             throw new IllegalStateException(
                     "View out of sync: OCC failed for item "
                             + itemId
-                            + " (Expected "
-                            + baseVersion
-                            + ", got "
+                            + " (Expected at least "
                             + currentVersion
+                            + ", got "
+                            + baseVersion
                             + ")");
         }
 
@@ -87,12 +89,12 @@ public class LoomEngine {
      */
     public boolean projectEvent(Event event) {
         // 1. Wrap the single attribute update into our routing structure
-        // We use HashMap instead of Map.of() because Map.of() throws NPE if the value is null.
-        Map<UUID, Object> singlePatch = new java.util.HashMap<>();
-        singlePatch.put(event.fieldId(), event.newValue());
-
-        // 2. Property Bucketing Logic via Pattern Matching / Java streams
-        Map<BucketType, Map<UUID, Object>> bucketedPatches = routeAttributes(singlePatch);
+        Map<BucketType, Map<UUID, Object>> bucketedPatches = new java.util.HashMap<>();
+        if (event.fieldId() != null) {
+            Map<UUID, Object> singlePatch = new java.util.HashMap<>();
+            singlePatch.put(event.fieldId(), event.newValue());
+            bucketedPatches = routeAttributes(singlePatch);
+        }
 
         // 3. Update Database (Optimistic Concurrency Control / CAS)
         // We pass event.baseVersion() directly to enforce WHERE version = eventSeq - 1
