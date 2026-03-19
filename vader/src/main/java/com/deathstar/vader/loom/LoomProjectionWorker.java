@@ -1,17 +1,19 @@
 package com.deathstar.vader.loom;
 
-import com.deathstar.loom.core.domain.Event;
-import com.deathstar.loom.core.engine.LoomEngine;
-import com.deathstar.vader.dto.EventMessage;
-import com.deathstar.vader.loom.spi.PostgresStateRepository;
-import com.deathstar.vader.service.SseBroadcasterService;
-import com.deathstar.vader.tracing.NatsTracingPropagator;
+import com.deathstar.vader.core.tracing.NatsTracingPropagator;
+import com.deathstar.vader.event.domain.DomainEvent;
+import com.deathstar.vader.event.domain.EventRoute;
+import com.deathstar.vader.event.spi.EventBus;
+import com.deathstar.vader.loom.core.domain.Event;
+import com.deathstar.vader.loom.core.engine.LoomEngine;
+import com.deathstar.vader.loom.infrastructure.PostgresStateRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.Connection;
 import io.nats.client.JetStream;
 import io.nats.client.PushSubscribeOptions;
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -30,7 +32,7 @@ public class LoomProjectionWorker {
     private final ObjectMapper objectMapper;
     private final LoomEngine loomEngine;
     private final PostgresStateRepository stateRepository;
-    private final SseBroadcasterService sseBroadcasterService;
+    private final EventBus eventBus;
 
     // Striped Locking map to ensure Virtual Threads modifying the same Item are serialized.
     private final ConcurrentHashMap<UUID, Lock> itemLocks = new ConcurrentHashMap<>();
@@ -46,14 +48,14 @@ public class LoomProjectionWorker {
             ObjectMapper objectMapper,
             LoomEngine loomEngine,
             PostgresStateRepository stateRepository,
-            SseBroadcasterService sseBroadcasterService) {
+            EventBus eventBus) {
         this.natsConnection = natsConnection;
         this.jetStream = jetStream;
         this.tracingPropagator = tracingPropagator;
         this.objectMapper = objectMapper;
         this.loomEngine = loomEngine;
         this.stateRepository = stateRepository;
-        this.sseBroadcasterService = sseBroadcasterService;
+        this.eventBus = eventBus;
     }
 
     @PostConstruct
@@ -88,7 +90,8 @@ public class LoomProjectionWorker {
     private void projectEventPayload(io.nats.client.Message message) {
         Event event;
         try {
-            event = objectMapper.readValue(message.getData(), Event.class);
+            DomainEvent temp = objectMapper.readValue(message.getData(), DomainEvent.class);
+            event = objectMapper.convertValue(temp.payload(), Event.class);
         } catch (Exception e) {
             log.error(
                     "Failed to deserialize loom event payload: {}",
@@ -138,10 +141,15 @@ public class LoomProjectionWorker {
                     "Successfully projected event {} for item {}", event.eventId(), event.itemId());
 
             // 4. Query (The View): Real-time Sync back to the application via SSE
-            EventMessage sseMessage =
-                    new EventMessage("ITEM_UPDATED", event, System.currentTimeMillis());
-            sseBroadcasterService.publishEvent(sseMessage);
-
+            DomainEvent sseMessage =
+                    new DomainEvent(
+                            event.eventId(),
+                            "ITEM_UPDATED",
+                            Instant.now(),
+                            event.itemId().toString(),
+                            event);
+            eventBus.publishEphemeral(EventRoute.SYSTEM, sseMessage);
+            log.debug("Propagated loom projection event via SSE: ITEM_UPDATED");
         } catch (Exception e) {
             log.error("Unexpected error projecting event {}", event.eventId(), e);
             message.nak(); // Retry on transient failures

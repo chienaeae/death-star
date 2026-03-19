@@ -2,8 +2,9 @@ package com.deathstar.vader.audit.listener;
 
 import com.deathstar.vader.audit.AuditEvent;
 import com.deathstar.vader.audit.AuditEventFactory;
-import com.deathstar.vader.audit.AuditEventPayload;
-import com.deathstar.vader.audit.service.AuditEventPublisher;
+import com.deathstar.vader.event.domain.DomainEvent;
+import com.deathstar.vader.event.domain.EventRoute;
+import com.deathstar.vader.event.spi.EventBus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -16,21 +17,19 @@ import org.springframework.stereotype.Component;
 public class AuditEventListener {
 
     private final AuditEventFactory auditEventFactory;
-    private final AuditEventPublisher auditEventPublisher;
+    private final EventBus eventBus;
 
     /**
-     * Intercepts AuditEvents autonomously, transforms them into standardized payloads via the
-     * Factory, and streams them to the NATS broker publisher asynchronously without blocking the
-     * main caller threads.
+     * Intercepts Spring ApplicationEvents, maps to DomainEvent, and publishes durably via EventBus.
      */
     @Async
     @EventListener
     public void handleDomainAuditEvent(AuditEvent<?> event) {
         try {
-            AuditEventPayload payload = auditEventFactory.createPayload(event);
-            auditEventPublisher.publish(payload);
+            DomainEvent domainEvent = auditEventFactory.createPayload(event);
+            eventBus.publishDurable(EventRoute.AUDIT, "vader", domainEvent);
         } catch (Exception e) {
-            log.error("Failed to process AuditEvent and publish to NATS", e);
+            log.error("Failed to process AuditEvent and publish to EventBus", e);
         }
     }
 }

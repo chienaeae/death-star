@@ -1,17 +1,16 @@
 package com.deathstar.vader.loom.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.deathstar.loom.core.domain.BucketType;
-import com.deathstar.loom.core.domain.FieldDefinition;
-import com.deathstar.loom.core.domain.FieldDefinition.FieldType;
-import com.deathstar.loom.core.spi.IdentityResolver;
+import com.deathstar.vader.loom.core.domain.BucketType;
+import com.deathstar.vader.loom.core.domain.FieldDefinition;
+import com.deathstar.vader.loom.core.domain.FieldDefinition.FieldType;
+import com.deathstar.vader.loom.core.spi.IdentityResolver;
+import com.deathstar.vader.loom.infrastructure.PostgresTaskFieldRegistry;
 import com.deathstar.vader.loom.repository.TaskFieldDefinitionRepository;
-import com.deathstar.vader.loom.spi.PostgresTaskFieldRegistry;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,8 +37,13 @@ class TaskFieldDefinitionServiceTest {
         // Arrange
         String tenantId = "tenant-123";
         when(identityResolver.currentTenantId()).thenReturn(tenantId);
-        
-        FieldDefinition mockField = new FieldDefinition(java.util.UUID.randomUUID(), "Story Points", FieldType.INTEGER, BucketType.STATIC);
+
+        FieldDefinition mockField =
+                new FieldDefinition(
+                        java.util.UUID.randomUUID(),
+                        "Story Points",
+                        FieldType.INTEGER,
+                        BucketType.STATIC);
         when(repository.findAllByTenantId(tenantId)).thenReturn(List.of(mockField));
 
         // Act

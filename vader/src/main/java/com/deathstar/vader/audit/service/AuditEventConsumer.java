@@ -1,17 +1,15 @@
 package com.deathstar.vader.audit.service;
 
-import com.deathstar.vader.audit.AuditEventPayload;
-import com.deathstar.vader.tracing.NatsTracingPropagator;
+import com.deathstar.vader.core.tracing.NatsTracingPropagator;
+import com.deathstar.vader.event.domain.EventRoute;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.Connection;
 import io.nats.client.JetStream;
 import io.nats.client.PushSubscribeOptions;
 import io.opentelemetry.api.trace.Span;
 import jakarta.annotation.PostConstruct;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -53,12 +51,12 @@ public class AuditEventConsumer {
     public void init() {
         try {
             PushSubscribeOptions pso =
-                    PushSubscribeOptions.builder().stream("AUDIT")
+                    PushSubscribeOptions.builder().stream(EventRoute.AUDIT.stream())
                             .durable("audit-event-consumers")
                             .build();
 
             jetStream.subscribe(
-                    "audit.events.>",
+                    EventRoute.AUDIT.wildcardSubject(),
                     natsConnection.createDispatcher(),
                     msg -> {
                         tracingPropagator.processMessageWithTracing(
@@ -76,31 +74,46 @@ public class AuditEventConsumer {
                                                     : "";
 
                                     try {
-                                        AuditEventPayload payload =
+                                        com.deathstar.vader.event.domain.DomainEvent domainEvent =
                                                 objectMapper.readValue(
-                                                        message.getData(), AuditEventPayload.class);
+                                                        message.getData(),
+                                                        com.deathstar.vader.event.domain.DomainEvent
+                                                                .class);
+
+                                        @SuppressWarnings("unchecked")
+                                        java.util.Map<String, Object> payloadMap =
+                                                (java.util.Map<String, Object>)
+                                                        domainEvent.payload();
+
                                         MapSqlParameterSource params =
                                                 new MapSqlParameterSource()
                                                         .addValue(
                                                                 "timestamp",
                                                                 java.sql.Timestamp.from(
-                                                                        Instant.now()))
-                                                        .addValue("eventId", UUID.randomUUID())
+                                                                        domainEvent.timestamp()))
+                                                        .addValue("eventId", domainEvent.eventId())
                                                         .addValue("traceId", traceId)
                                                         .addValue("spanId", spanId)
-                                                        .addValue("actorId", payload.actorId())
-                                                        .addValue("action", payload.action())
+                                                        .addValue(
+                                                                "actorId",
+                                                                domainEvent.aggregateId())
+                                                        .addValue(
+                                                                "action", payloadMap.get("action"))
                                                         .addValue(
                                                                 "resourceType",
-                                                                payload.resourceType())
+                                                                payloadMap.get("resourceType"))
                                                         .addValue(
-                                                                "resourceId", payload.resourceId())
-                                                        .addValue("status", payload.status())
+                                                                "resourceId",
+                                                                payloadMap.get("resourceId"))
+                                                        .addValue(
+                                                                "status", payloadMap.get("status"))
                                                         // Simplified for demo: In production we use
                                                         // actual IP and context retrieval
                                                         .addValue("clientIp", "127.0.0.1")
                                                         .addValue("userAgent", "vader-internal")
-                                                        .addValue("metadata", payload.metadata());
+                                                        .addValue(
+                                                                "metadata",
+                                                                payloadMap.get("metadata"));
 
                                         addToBatch(params);
                                         message.ack(); // Acknowledge successful processing

@@ -1,10 +1,13 @@
 package com.deathstar.vader.auth.service;
 
 import com.deathstar.vader.audit.AuditEvent;
+import com.deathstar.vader.audit.AuditEventFactory;
 import com.deathstar.vader.audit.schema.ActionStatus;
 import com.deathstar.vader.audit.schema.CoreResource;
 import com.deathstar.vader.audit.schema.UserAction;
-import com.deathstar.vader.tracing.NatsTracingPropagator;
+import com.deathstar.vader.core.tracing.NatsTracingPropagator;
+import com.deathstar.vader.event.domain.EventRoute;
+import com.deathstar.vader.event.spi.EventBus;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.nats.client.Connection;
@@ -28,7 +31,8 @@ public class DistributedRevocationService {
 
     private final Connection natsConnection;
     private final NatsTracingPropagator natsTracingPropagator;
-    private final org.springframework.context.ApplicationEventPublisher applicationEventPublisher;
+    private final EventBus eventBus;
+    private final AuditEventFactory auditEventFactory;
 
     private static final String REVOCATION_SUBJECT = "auth.revoked";
 
@@ -64,15 +68,18 @@ public class DistributedRevocationService {
     public void broadcastRevocation(String userId) {
         log.warn("[KILL SWITCH] Broadcasting revocation for user: {}", userId);
 
-        applicationEventPublisher.publishEvent(
-                new AuditEvent<>(
-                        this,
-                        "SYSTEM",
-                        UserAction.USER_REVOKED,
-                        CoreResource.USER,
-                        userId,
-                        ActionStatus.SUCCESS,
-                        Map.of()));
+        eventBus.publishDurable(
+                EventRoute.AUDIT,
+                "auth.revocation",
+                auditEventFactory.createPayload(
+                        new AuditEvent<>(
+                                this,
+                                "SYSTEM",
+                                UserAction.USER_REVOKED,
+                                CoreResource.USER,
+                                userId,
+                                ActionStatus.SUCCESS,
+                                Map.of())));
 
         natsConnection.publish(
                 REVOCATION_SUBJECT,

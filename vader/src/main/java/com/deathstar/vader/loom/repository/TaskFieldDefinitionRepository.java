@@ -1,7 +1,7 @@
 package com.deathstar.vader.loom.repository;
 
-import com.deathstar.loom.core.domain.BucketType;
-import com.deathstar.loom.core.domain.FieldDefinition;
+import com.deathstar.vader.loom.core.domain.BucketType;
+import com.deathstar.vader.loom.core.domain.FieldDefinition;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,7 +17,8 @@ public class TaskFieldDefinitionRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     public Optional<FieldDefinition> findById(UUID id) {
-        String sql = "SELECT id, name, field_type, bucket_type FROM task_field_definitions WHERE id = :id";
+        String sql =
+                "SELECT id, name, field_type, bucket_type FROM task_field_definitions WHERE id = :id";
 
         return jdbcTemplate.query(
                 sql,
@@ -29,8 +30,11 @@ public class TaskFieldDefinitionRepository {
                                 new FieldDefinition(
                                         rs.getObject("id", UUID.class),
                                         rs.getString("name"),
-                                        FieldDefinition.FieldType.valueOf(rs.getString("field_type")),
-                                        targetBucket != null ? BucketType.valueOf(targetBucket) : null));
+                                        FieldDefinition.FieldType.valueOf(
+                                                rs.getString("field_type")),
+                                        targetBucket != null
+                                                ? BucketType.valueOf(targetBucket)
+                                                : null));
                     }
                     return Optional.empty();
                 });
@@ -63,7 +67,9 @@ public class TaskFieldDefinitionRepository {
         params.addValue("tenantId", tenantId);
         params.addValue("name", definition.name());
         params.addValue("fieldType", definition.type().name());
-        params.addValue("bucketType", definition.targetBucket() != null ? definition.targetBucket().name() : null);
+        params.addValue(
+                "bucketType",
+                definition.targetBucket() != null ? definition.targetBucket().name() : null);
 
         jdbcTemplate.update(sql, params);
     }

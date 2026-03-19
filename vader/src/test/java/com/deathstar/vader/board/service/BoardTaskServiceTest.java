@@ -7,12 +7,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.deathstar.loom.core.domain.Event;
-import com.deathstar.loom.core.engine.LoomEngine;
-import com.deathstar.loom.core.spi.EventStore;
 import com.deathstar.vader.board.repository.BoardColumnRepository;
+import com.deathstar.vader.loom.core.domain.Event;
+import com.deathstar.vader.loom.core.engine.LoomEngine;
+import com.deathstar.vader.loom.core.spi.EventStore;
 import com.deathstar.vader.loom.domain.FieldConstants;
-import com.deathstar.vader.loom.spi.ScopedValueIdentityResolver;
+import com.deathstar.vader.loom.infrastructure.ScopedValueIdentityResolver;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

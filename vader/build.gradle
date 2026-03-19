@@ -26,7 +26,7 @@ configurations {
 
 dependencies {
     // 0. Core Engine Integration
-    implementation project(':loom-core')
+    // loom-core was moved into vader
 
     // 1. Web & Virtual Threads (Spring WebMVC handles VT via configuration)
     implementation 'org.springframework.boot:spring-boot-starter-web'

@@ -1,15 +1,12 @@
 package com.deathstar.vader.loom.config;
 
-import com.deathstar.loom.core.domain.BucketType;
-import com.deathstar.loom.core.domain.FieldDefinition;
-import com.deathstar.loom.core.engine.LoomEngine;
-import com.deathstar.loom.core.spi.EventStore;
-import com.deathstar.loom.core.spi.FieldRegistry;
-import com.deathstar.loom.core.spi.IdentityResolver;
-import com.deathstar.loom.core.spi.StateRepository;
+import com.deathstar.vader.loom.core.engine.LoomEngine;
+import com.deathstar.vader.loom.core.spi.EventStore;
+import com.deathstar.vader.loom.core.spi.FieldRegistry;
+import com.deathstar.vader.loom.core.spi.IdentityResolver;
+import com.deathstar.vader.loom.core.spi.StateRepository;
 import com.deathstar.vader.loom.domain.*;
 import java.util.Collections;
-import java.util.UUID;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -29,6 +26,4 @@ public class LoomConfig {
         return new LoomEngine(
                 natsStore, pgRepo, identityResolver, fieldRegistry, Collections.emptyList());
     }
-
-
 }

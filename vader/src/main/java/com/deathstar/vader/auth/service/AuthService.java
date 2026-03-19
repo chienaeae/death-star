@@ -1,6 +1,7 @@
 package com.deathstar.vader.auth.service;
 
 import com.deathstar.vader.audit.AuditEvent;
+import com.deathstar.vader.audit.AuditEventFactory;
 import com.deathstar.vader.audit.schema.ActionStatus;
 import com.deathstar.vader.audit.schema.CoreResource;
 import com.deathstar.vader.audit.schema.UserAction;
@@ -8,6 +9,8 @@ import com.deathstar.vader.auth.*;
 import com.deathstar.vader.auth.repository.RefreshTokenRepository;
 import com.deathstar.vader.auth.repository.UserIdentityRepository;
 import com.deathstar.vader.auth.repository.UserRepository;
+import com.deathstar.vader.event.domain.EventRoute;
+import com.deathstar.vader.event.spi.EventBus;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -37,7 +40,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final DistributedRevocationService revocationService;
-    private final org.springframework.context.ApplicationEventPublisher applicationEventPublisher;
+    private final EventBus eventBus;
+    private final AuditEventFactory auditEventFactory;
 
     // 7 Days lifetime for Refresh Tokens
     private static final long REFRESH_TOKEN_VALIDITY_DAYS = 7;
@@ -57,15 +61,18 @@ public class AuthService {
         UserIdentity identity = new UserIdentity(user, PROVIDER_LOCAL, hashedPassword);
         identityRepository.save(identity);
 
-        applicationEventPublisher.publishEvent(
-                new AuditEvent<>(
-                        this,
-                        user.getId().toString(),
-                        UserAction.USER_REGISTER,
-                        CoreResource.USER,
-                        user.getId().toString(),
-                        ActionStatus.SUCCESS,
-                        Map.of()));
+        eventBus.publishDurable(
+                EventRoute.AUDIT,
+                "vader",
+                auditEventFactory.createPayload(
+                        new AuditEvent<>(
+                                this,
+                                user.getId().toString(),
+                                UserAction.USER_REGISTER,
+                                CoreResource.USER,
+                                user.getId().toString(),
+                                ActionStatus.SUCCESS,
+                                Map.of())));
 
         return issueNewSession(user);
     }
@@ -90,15 +97,18 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid credentials");
         }
 
-        applicationEventPublisher.publishEvent(
-                new AuditEvent<>(
-                        this,
-                        user.getId().toString(),
-                        UserAction.USER_LOGIN,
-                        CoreResource.USER,
-                        user.getId().toString(),
-                        ActionStatus.SUCCESS,
-                        Map.of()));
+        eventBus.publishDurable(
+                EventRoute.AUDIT,
+                "vader",
+                auditEventFactory.createPayload(
+                        new AuditEvent<>(
+                                this,
+                                user.getId().toString(),
+                                UserAction.USER_LOGIN,
+                                CoreResource.USER,
+                                user.getId().toString(),
+                                ActionStatus.SUCCESS,
+                                Map.of())));
 
         return issueNewSession(user);
     }
@@ -147,15 +157,18 @@ public class AuthService {
                         token -> {
                             token.setRevoked(true);
                             refreshTokenRepository.save(token);
-                            applicationEventPublisher.publishEvent(
-                                    new AuditEvent<>(
-                                            this,
-                                            token.getUser().getId().toString(),
-                                            UserAction.USER_LOGOUT,
-                                            CoreResource.USER,
-                                            token.getFamilyId().toString(),
-                                            ActionStatus.SUCCESS,
-                                            Map.of()));
+                            eventBus.publishDurable(
+                                    EventRoute.AUDIT,
+                                    "vader",
+                                    auditEventFactory.createPayload(
+                                            new AuditEvent<>(
+                                                    this,
+                                                    token.getUser().getId().toString(),
+                                                    UserAction.USER_LOGOUT,
+                                                    CoreResource.USER,
+                                                    token.getFamilyId().toString(),
+                                                    ActionStatus.SUCCESS,
+                                                    Map.of())));
                         });
     }
 

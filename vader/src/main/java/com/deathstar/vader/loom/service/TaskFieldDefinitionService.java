@@ -1,11 +1,11 @@
 package com.deathstar.vader.loom.service;
 
-import com.deathstar.loom.core.domain.BucketType;
-import com.deathstar.loom.core.domain.FieldDefinition;
-import com.deathstar.loom.core.domain.FieldDefinition.FieldType;
-import com.deathstar.loom.core.spi.IdentityResolver;
+import com.deathstar.vader.loom.core.domain.BucketType;
+import com.deathstar.vader.loom.core.domain.FieldDefinition;
+import com.deathstar.vader.loom.core.domain.FieldDefinition.FieldType;
+import com.deathstar.vader.loom.core.spi.IdentityResolver;
+import com.deathstar.vader.loom.infrastructure.PostgresTaskFieldRegistry;
 import com.deathstar.vader.loom.repository.TaskFieldDefinitionRepository;
-import com.deathstar.vader.loom.spi.PostgresTaskFieldRegistry;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +46,8 @@ public class TaskFieldDefinitionService {
         repository.save(tenantId, newField);
         log.info("Created new custom field '{}' [{}] for tenant: {}", name, type, tenantId);
 
-        // 3. Eagerly seed the local HashMap cache to avoid a future DB hit during stream projection!
+        // 3. Eagerly seed the local HashMap cache to avoid a future DB hit during stream
+        // projection!
         fieldRegistry.primeCache(newField);
 
         return newField;

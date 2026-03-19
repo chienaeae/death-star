@@ -1,14 +1,14 @@
 package com.deathstar.vader.board.service;
 
-import com.deathstar.loom.core.domain.Event;
-import com.deathstar.loom.core.engine.LexRank;
-import com.deathstar.loom.core.engine.LoomEngine;
-import com.deathstar.loom.core.spi.EventStore;
 import com.deathstar.vader.board.entity.BoardColumn;
 import com.deathstar.vader.board.repository.BoardColumnRepository;
 import com.deathstar.vader.board.repository.BoardRepository;
+import com.deathstar.vader.loom.core.domain.Event;
+import com.deathstar.vader.loom.core.engine.LexRank;
+import com.deathstar.vader.loom.core.engine.LoomEngine;
+import com.deathstar.vader.loom.core.spi.EventStore;
 import com.deathstar.vader.loom.domain.FieldConstants;
-import com.deathstar.vader.loom.spi.ScopedValueIdentityResolver;
+import com.deathstar.vader.loom.infrastructure.ScopedValueIdentityResolver;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;

@@ -1,0 +1,89 @@
+package com.deathstar.vader.sse.service;
+
+import com.deathstar.vader.core.tracing.NatsTracingPropagator;
+import com.deathstar.vader.event.domain.EventRoute;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.nats.client.Connection;
+import io.nats.client.Dispatcher;
+import jakarta.annotation.PostConstruct;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+/** Bridges the NATS event bus with standard HTTP Server-Sent Events. */
+@Service
+public class SseBroadcasterService {
+
+    private static final Logger log = LoggerFactory.getLogger(SseBroadcasterService.class);
+
+    private final Connection natsConnection;
+    private final ObjectMapper objectMapper;
+    private final NatsTracingPropagator natsTracingPropagator;
+
+    // CopyOnWriteArrayList is chosen based on the 80/20 rule:
+    // We iterate (read) to broadcast vastly more often than clients connect/disconnect (write).
+    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+
+    public SseBroadcasterService(
+            Connection natsConnection,
+            ObjectMapper objectMapper,
+            NatsTracingPropagator natsTracingPropagator) {
+        this.natsConnection = natsConnection;
+        this.objectMapper = objectMapper;
+        this.natsTracingPropagator = natsTracingPropagator;
+    }
+
+    /**
+     * Subscribe to NATS core topics upon service startup. When a message arrives from NATS,
+     * broadcast it to all connected SSE clients.
+     */
+    @PostConstruct
+    public void initSubscriber() {
+        Dispatcher dispatcher =
+                natsConnection.createDispatcher(
+                        (msg) ->
+                                natsTracingPropagator.processMessageWithTracing(
+                                        msg,
+                                        "receive_system_event",
+                                        (tracedMsg) -> {
+                                            String jsonPayload = new String(tracedMsg.getData());
+                                            broadcastToClients(jsonPayload);
+                                        }));
+        dispatcher.subscribe(EventRoute.SYSTEM.subject(""));
+        log.info("NATS subscriber initialized on subject: {}", EventRoute.SYSTEM.subject(""));
+    }
+
+    /** Register a new client connection for SSE. */
+    public SseEmitter registerClient() {
+        // Use a virtually infinite timeout for long-lived connections
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+
+        emitter.onCompletion(() -> emitters.remove(emitter));
+        emitter.onTimeout(() -> emitters.remove(emitter));
+        emitter.onError((e) -> emitters.remove(emitter));
+
+        emitters.add(emitter);
+        return emitter;
+    }
+
+    /**
+     * Iterates through all connected clients and pushes the JSON string. With Virtual Threads, the
+     * blocking I/O inside emitter.send() is virtually free.
+     */
+    private void broadcastToClients(String jsonPayload) {
+        for (SseEmitter emitter : emitters) {
+            try {
+                // The SseEmitter.event().data() payload structure natively matches
+                // the `text/event-stream` contract required by browsers.
+                emitter.send(SseEmitter.event().data(jsonPayload));
+            } catch (IOException e) {
+                // Client disconnected ungracefully; remove them.
+                emitters.remove(emitter);
+            }
+        }
+    }
+}

@@ -5,12 +5,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+import com.deathstar.vader.audit.AuditEventFactory;
 import com.deathstar.vader.auth.JwtProvider;
 import com.deathstar.vader.auth.RefreshToken;
 import com.deathstar.vader.auth.User;
 import com.deathstar.vader.auth.UserIdentity;
 import com.deathstar.vader.auth.repository.*;
 import com.deathstar.vader.auth.repository.UserRepository;
+import com.deathstar.vader.event.spi.EventBus;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -25,7 +27,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,7 +44,9 @@ class AuthServiceTest {
 
     @Mock private DistributedRevocationService revocationService;
 
-    @Mock private ApplicationEventPublisher applicationEventPublisher;
+    @Mock private EventBus eventBus;
+
+    @Mock private AuditEventFactory auditEventFactory;
 
     @InjectMocks private AuthService authService;
 

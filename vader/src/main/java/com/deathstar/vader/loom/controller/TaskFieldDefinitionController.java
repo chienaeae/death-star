@@ -1,10 +1,10 @@
 package com.deathstar.vader.loom.controller;
 
-import com.deathstar.loom.core.domain.BucketType;
-import com.deathstar.loom.core.domain.FieldDefinition;
 import com.deathstar.vader.api.TaskFieldsApi;
 import com.deathstar.vader.dto.generated.TaskFieldDefinition;
 import com.deathstar.vader.dto.generated.TaskFieldDefinitionRequest;
+import com.deathstar.vader.loom.core.domain.BucketType;
+import com.deathstar.vader.loom.core.domain.FieldDefinition;
 import com.deathstar.vader.loom.service.TaskFieldDefinitionService;
 import java.util.List;
 import java.util.stream.Collectors;
