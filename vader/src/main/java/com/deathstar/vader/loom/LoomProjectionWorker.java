@@ -3,14 +3,13 @@ package com.deathstar.vader.loom;
 import com.deathstar.vader.core.tracing.NatsTracingPropagator;
 import com.deathstar.vader.event.domain.DomainEvent;
 import com.deathstar.vader.event.domain.EventRoute;
-import com.deathstar.vader.event.spi.EventBus;
+import com.deathstar.vader.event.spi.EventPublisher;
 import com.deathstar.vader.loom.core.domain.Event;
 import com.deathstar.vader.loom.core.engine.LoomEngine;
 import com.deathstar.vader.loom.infrastructure.PostgresStateRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.nats.client.Connection;
-import io.nats.client.JetStream;
-import io.nats.client.PushSubscribeOptions;
+import com.deathstar.vader.event.domain.EventMessage;
+import com.deathstar.vader.event.spi.EventSubscriber;
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -26,13 +25,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class LoomProjectionWorker {
 
-    private final Connection natsConnection;
-    private final JetStream jetStream;
-    private final NatsTracingPropagator tracingPropagator;
     private final ObjectMapper objectMapper;
     private final LoomEngine loomEngine;
     private final PostgresStateRepository stateRepository;
-    private final EventBus eventBus;
+    private final EventPublisher eventPublisher;
+    private final EventSubscriber eventSubscriber;
 
     // Striped Locking map to ensure Virtual Threads modifying the same Item are serialized.
     private final ConcurrentHashMap<UUID, Lock> itemLocks = new ConcurrentHashMap<>();
@@ -42,62 +39,39 @@ public class LoomProjectionWorker {
             Executors.newVirtualThreadPerTaskExecutor();
 
     public LoomProjectionWorker(
-            Connection natsConnection,
-            JetStream jetStream,
-            NatsTracingPropagator tracingPropagator,
             ObjectMapper objectMapper,
             LoomEngine loomEngine,
             PostgresStateRepository stateRepository,
-            EventBus eventBus) {
-        this.natsConnection = natsConnection;
-        this.jetStream = jetStream;
-        this.tracingPropagator = tracingPropagator;
+            EventPublisher eventPublisher,
+            EventSubscriber eventSubscriber) {
         this.objectMapper = objectMapper;
         this.loomEngine = loomEngine;
         this.stateRepository = stateRepository;
-        this.eventBus = eventBus;
+        this.eventPublisher = eventPublisher;
+        this.eventSubscriber = eventSubscriber;
     }
 
     @PostConstruct
     public void init() {
         try {
-            PushSubscribeOptions pso =
-                    PushSubscribeOptions.builder().stream("LOOM")
-                            .durable("loom-projection-worker")
-                            .build();
-
-            jetStream.subscribe(
-                    "loom.>",
-                    natsConnection.createDispatcher(),
-                    msg -> {
-                        // Hand off to Virtual Thread immediately for high-throughput
-                        virtualThreadExecutor.execute(
-                                () -> {
-                                    tracingPropagator.processMessageWithTracing(
-                                            msg,
-                                            "project_loom_event",
-                                            message -> projectEventPayload(message));
-                                });
-                    },
-                    false, // autoAck = false
-                    pso);
-            log.info("LoomProjectionWorker initialized for subject loom.>");
+            eventSubscriber.subscribe(EventRoute.LOOM, ">", "loom-projection-worker", eventMessage -> {
+                // Hand off to Virtual Thread immediately for high-throughput
+                virtualThreadExecutor.execute(() -> projectEventPayload(eventMessage));
+            });
+            log.info("LoomProjectionWorker initialized using EventSubscriber");
         } catch (Exception e) {
-            log.error("Failed to subscribe to JetStream LOOM events", e);
+            log.error("Failed to subscribe to Loom events via EventSubscriber", e);
         }
     }
 
-    private void projectEventPayload(io.nats.client.Message message) {
+    private void projectEventPayload(EventMessage eventMessage) {
         Event event;
         try {
-            DomainEvent temp = objectMapper.readValue(message.getData(), DomainEvent.class);
-            event = objectMapper.convertValue(temp.payload(), Event.class);
+            DomainEvent domainEvent = eventMessage.domainEvent();
+            event = objectMapper.convertValue(domainEvent.payload(), Event.class);
         } catch (Exception e) {
-            log.error(
-                    "Failed to deserialize loom event payload: {}",
-                    new String(message.getData(), StandardCharsets.UTF_8),
-                    e);
-            message.ack(); // Poison pill, ack it to avoid getting stuck
+            log.error("Failed to deserialize loom event payload", e);
+            eventMessage.ack(); // Poison pill, ack it to avoid getting stuck
             return;
         }
 
@@ -121,7 +95,7 @@ public class LoomProjectionWorker {
                             event.itemId(),
                             event.baseVersion(),
                             currentDBVersion);
-                    message.ack();
+                    eventMessage.ack();
                 } else {
                     // Event is from the future (Out of order). NACK to let NATS retry later.
                     log.warn(
@@ -130,13 +104,13 @@ public class LoomProjectionWorker {
                             event.itemId(),
                             event.baseVersion(),
                             currentDBVersion);
-                    message.nakWithDelay(java.time.Duration.ofSeconds(1));
+                    eventMessage.nackWithDelay(java.time.Duration.ofSeconds(1));
                 }
                 return;
             }
 
             // Successfully projected to DB.
-            message.ack();
+            eventMessage.ack();
             log.debug(
                     "Successfully projected event {} for item {}", event.eventId(), event.itemId());
 
@@ -148,11 +122,11 @@ public class LoomProjectionWorker {
                             Instant.now(),
                             event.itemId().toString(),
                             event);
-            eventBus.publishEphemeral(EventRoute.SYSTEM, sseMessage);
+            eventPublisher.publish(EventRoute.SYSTEM, "", sseMessage);
             log.debug("Propagated loom projection event via SSE: ITEM_UPDATED");
         } catch (Exception e) {
             log.error("Unexpected error projecting event {}", event.eventId(), e);
-            message.nak(); // Retry on transient failures
+            eventMessage.nack(); // Retry on transient failures
         } finally {
             lock.unlock();
         }

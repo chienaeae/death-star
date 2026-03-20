@@ -1,10 +1,8 @@
 package com.deathstar.vader.sse.service;
 
-import com.deathstar.vader.core.tracing.NatsTracingPropagator;
 import com.deathstar.vader.event.domain.EventRoute;
+import com.deathstar.vader.event.spi.EventSubscriber;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.nats.client.Connection;
-import io.nats.client.Dispatcher;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.List;
@@ -20,21 +18,18 @@ public class SseBroadcasterService {
 
     private static final Logger log = LoggerFactory.getLogger(SseBroadcasterService.class);
 
-    private final Connection natsConnection;
     private final ObjectMapper objectMapper;
-    private final NatsTracingPropagator natsTracingPropagator;
+    private final EventSubscriber eventSubscriber;
 
     // CopyOnWriteArrayList is chosen based on the 80/20 rule:
     // We iterate (read) to broadcast vastly more often than clients connect/disconnect (write).
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
     public SseBroadcasterService(
-            Connection natsConnection,
             ObjectMapper objectMapper,
-            NatsTracingPropagator natsTracingPropagator) {
-        this.natsConnection = natsConnection;
+            EventSubscriber eventSubscriber) {
         this.objectMapper = objectMapper;
-        this.natsTracingPropagator = natsTracingPropagator;
+        this.eventSubscriber = eventSubscriber;
     }
 
     /**
@@ -43,18 +38,19 @@ public class SseBroadcasterService {
      */
     @PostConstruct
     public void initSubscriber() {
-        Dispatcher dispatcher =
-                natsConnection.createDispatcher(
-                        (msg) ->
-                                natsTracingPropagator.processMessageWithTracing(
-                                        msg,
-                                        "receive_system_event",
-                                        (tracedMsg) -> {
-                                            String jsonPayload = new String(tracedMsg.getData());
-                                            broadcastToClients(jsonPayload);
-                                        }));
-        dispatcher.subscribe(EventRoute.SYSTEM.subject(""));
-        log.info("NATS subscriber initialized on subject: {}", EventRoute.SYSTEM.subject(""));
+        try {
+            eventSubscriber.subscribe(EventRoute.SYSTEM, "", "sse-broadcaster", eventMessage -> {
+                try {
+                    String jsonPayload = objectMapper.writeValueAsString(eventMessage.domainEvent());
+                    broadcastToClients(jsonPayload);
+                } catch (Exception e) {
+                    log.error("Failed to serialize DomainEvent for SSE broadcast", e);
+                }
+            });
+            log.info("NATS SSE subscriber initialized via EventSubscriber");
+        } catch (Exception e) {
+            log.error("Failed to initialize NATS SSE subscriber", e);
+        }
     }
 
     /** Register a new client connection for SSE. */

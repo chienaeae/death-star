@@ -12,7 +12,7 @@ import com.deathstar.vader.auth.User;
 import com.deathstar.vader.auth.UserIdentity;
 import com.deathstar.vader.auth.repository.*;
 import com.deathstar.vader.auth.repository.UserRepository;
-import com.deathstar.vader.event.spi.EventBus;
+import com.deathstar.vader.event.spi.EventPublisher;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -44,7 +44,7 @@ class AuthServiceTest {
 
     @Mock private DistributedRevocationService revocationService;
 
-    @Mock private EventBus eventBus;
+    @Mock private EventPublisher eventPublisher;
 
     @Mock private AuditEventFactory auditEventFactory;
 

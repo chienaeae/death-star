@@ -5,33 +5,23 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.deathstar.vader.core.tracing.NatsTracingPropagator;
+import com.deathstar.vader.event.spi.EventSubscriber;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.nats.client.Connection;
-import io.nats.client.Dispatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SseBroadcasterServiceTest {
 
-    private Connection natsConnection;
+    private EventSubscriber eventSubscriber;
     private ObjectMapper objectMapper;
-    private NatsTracingPropagator natsTracingPropagator;
     private SseBroadcasterService service;
 
     @BeforeEach
     void setUp() {
-        natsConnection = mock(Connection.class);
+        eventSubscriber = mock(EventSubscriber.class);
         objectMapper = new ObjectMapper();
-        natsTracingPropagator = mock(NatsTracingPropagator.class);
 
-        // Mock Dispatcher creation for @PostConstruct init()
-        Dispatcher dispatcher = mock(Dispatcher.class);
-        when(natsConnection.createDispatcher(any())).thenReturn(dispatcher);
-
-        when(natsTracingPropagator.injectContext()).thenReturn(new io.nats.client.impl.Headers());
-
-        service = new SseBroadcasterService(natsConnection, objectMapper, natsTracingPropagator);
+        service = new SseBroadcasterService(objectMapper, eventSubscriber);
         service.initSubscriber();
     }
 

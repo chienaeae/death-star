@@ -10,7 +10,7 @@ import com.deathstar.vader.auth.repository.RefreshTokenRepository;
 import com.deathstar.vader.auth.repository.UserIdentityRepository;
 import com.deathstar.vader.auth.repository.UserRepository;
 import com.deathstar.vader.event.domain.EventRoute;
-import com.deathstar.vader.event.spi.EventBus;
+import com.deathstar.vader.event.spi.EventPublisher;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -40,7 +40,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final DistributedRevocationService revocationService;
-    private final EventBus eventBus;
+    private final EventPublisher eventPublisher;
     private final AuditEventFactory auditEventFactory;
 
     // 7 Days lifetime for Refresh Tokens
@@ -61,7 +61,7 @@ public class AuthService {
         UserIdentity identity = new UserIdentity(user, PROVIDER_LOCAL, hashedPassword);
         identityRepository.save(identity);
 
-        eventBus.publishDurable(
+        eventPublisher.publish(
                 EventRoute.AUDIT,
                 "vader",
                 auditEventFactory.createPayload(
@@ -97,7 +97,7 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid credentials");
         }
 
-        eventBus.publishDurable(
+        eventPublisher.publish(
                 EventRoute.AUDIT,
                 "vader",
                 auditEventFactory.createPayload(
@@ -157,7 +157,7 @@ public class AuthService {
                         token -> {
                             token.setRevoked(true);
                             refreshTokenRepository.save(token);
-                            eventBus.publishDurable(
+                            eventPublisher.publish(
                                     EventRoute.AUDIT,
                                     "vader",
                                     auditEventFactory.createPayload(

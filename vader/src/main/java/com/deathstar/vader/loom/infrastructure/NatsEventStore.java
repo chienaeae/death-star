@@ -2,7 +2,7 @@ package com.deathstar.vader.loom.infrastructure;
 
 import com.deathstar.vader.event.domain.DomainEvent;
 import com.deathstar.vader.event.domain.EventRoute;
-import com.deathstar.vader.event.spi.EventBus;
+import com.deathstar.vader.event.spi.EventPublisher;
 import com.deathstar.vader.loom.core.domain.Event;
 import com.deathstar.vader.loom.core.spi.EventStore;
 import java.time.Instant;
@@ -12,7 +12,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/** Vader's implementation of the EventStore using unified EventBus. */
+/** Vader's implementation of the EventStore using unified EventPublisher. */
 @Component
 @RequiredArgsConstructor
 public class NatsEventStore implements EventStore {
@@ -20,7 +20,7 @@ public class NatsEventStore implements EventStore {
     private static final org.slf4j.Logger log =
             org.slf4j.LoggerFactory.getLogger(NatsEventStore.class);
 
-    private final EventBus eventBus;
+    private final EventPublisher eventPublisher;
 
     @Override
     public void append(Event event) {
@@ -39,10 +39,10 @@ public class NatsEventStore implements EventStore {
             // Assuming 'span' is available in this context, e.g., from a tracing library
             // span.setAttribute("loom.event.type", domainEvent.type());
 
-            eventBus.publishDurable(EventRoute.LOOM, domainEvent.type(), domainEvent);
-            log.debug("Published event {} via EventBus to {}", event.eventId(), subject);
+            eventPublisher.publish(EventRoute.LOOM, domainEvent.type(), domainEvent);
+            log.debug("Published event {} via EventPublisher to {}", event.eventId(), subject);
         } catch (Exception e) {
-            log.error("Failed to append event via EventBus", e);
+            log.error("Failed to append event via EventPublisher", e);
             throw new RuntimeException("Event append failure", e);
         }
     }

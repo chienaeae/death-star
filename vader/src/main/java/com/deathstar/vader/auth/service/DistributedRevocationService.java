@@ -5,16 +5,16 @@ import com.deathstar.vader.audit.AuditEventFactory;
 import com.deathstar.vader.audit.schema.ActionStatus;
 import com.deathstar.vader.audit.schema.CoreResource;
 import com.deathstar.vader.audit.schema.UserAction;
-import com.deathstar.vader.core.tracing.NatsTracingPropagator;
+import com.deathstar.vader.event.domain.DomainEvent;
 import com.deathstar.vader.event.domain.EventRoute;
-import com.deathstar.vader.event.spi.EventBus;
+import com.deathstar.vader.event.spi.EventPublisher;
+import com.deathstar.vader.event.spi.EventSubscriber;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import io.nats.client.Connection;
-import io.nats.client.Dispatcher;
 import jakarta.annotation.PostConstruct;
-import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,12 +29,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DistributedRevocationService {
 
-    private final Connection natsConnection;
-    private final NatsTracingPropagator natsTracingPropagator;
-    private final EventBus eventBus;
+    private final EventPublisher eventPublisher;
+    private final EventSubscriber eventSubscriber;
     private final AuditEventFactory auditEventFactory;
-
-    private static final String REVOCATION_SUBJECT = "auth.revoked";
 
     // O(1) Local Blacklist: TTL must match JWT expiration to free memory automatically
     private final Cache<String, Boolean> revokedUsersCache =
@@ -45,30 +42,18 @@ public class DistributedRevocationService {
 
     @PostConstruct
     public void init() {
-        Dispatcher dispatcher =
-                natsConnection.createDispatcher(
-                        msg ->
-                                natsTracingPropagator.processMessageWithTracing(
-                                        msg,
-                                        "receive_revocation_event",
-                                        tracedMsg -> {
-                                            String revokedUserId =
-                                                    new String(
-                                                            tracedMsg.getData(),
-                                                            StandardCharsets.UTF_8);
-                                            log.warn(
-                                                    "[KILL SWITCH] Received revocation event for user: {}",
-                                                    revokedUserId);
-                                            revokedUsersCache.put(revokedUserId, true);
-                                        }));
-        dispatcher.subscribe(REVOCATION_SUBJECT);
+        eventSubscriber.subscribe(EventRoute.AUTH, "revoked", "distributed-revocation-service", eventMessage -> {
+            String revokedUserId = (String) eventMessage.domainEvent().payload();
+            log.warn("[KILL SWITCH] Received revocation event for user: {}", revokedUserId);
+            revokedUsersCache.put(revokedUserId, true);
+        });
     }
 
     /** Broadcasts a revocation event to all Vader instances in the K8s cluster. */
     public void broadcastRevocation(String userId) {
         log.warn("[KILL SWITCH] Broadcasting revocation for user: {}", userId);
 
-        eventBus.publishDurable(
+        eventPublisher.publish(
                 EventRoute.AUDIT,
                 "auth.revocation",
                 auditEventFactory.createPayload(
@@ -81,10 +66,17 @@ public class DistributedRevocationService {
                                 ActionStatus.SUCCESS,
                                 Map.of())));
 
-        natsConnection.publish(
-                REVOCATION_SUBJECT,
-                natsTracingPropagator.injectContext(),
-                userId.getBytes(StandardCharsets.UTF_8));
+        eventPublisher.publish(
+                EventRoute.AUTH,
+                "revoked",
+                new DomainEvent(
+                        UUID.randomUUID(),
+                        "USER_REVOKED",
+                        Instant.now(),
+                        userId,
+                        userId
+                )
+        );
     }
 
     /** O(1) RAM lookup to check if a user's JWT should be rejected immediately. */
