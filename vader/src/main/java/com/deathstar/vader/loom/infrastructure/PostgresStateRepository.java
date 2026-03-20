@@ -1,7 +1,7 @@
 package com.deathstar.vader.loom.infrastructure;
 
-import com.deathstar.vader.loom.core.domain.BucketType;
-import com.deathstar.vader.loom.core.spi.StateRepository;
+import com.deathstar.vader.loom.domain.BucketType;
+import com.deathstar.vader.loom.spi.StateRepository;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

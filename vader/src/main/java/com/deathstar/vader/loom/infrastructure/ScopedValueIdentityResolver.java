@@ -1,6 +1,6 @@
 package com.deathstar.vader.loom.infrastructure;
 
-import com.deathstar.vader.loom.core.spi.IdentityResolver;
+import com.deathstar.vader.loom.spi.IdentityResolver;
 import org.springframework.stereotype.Component;
 
 /** Custom Identity Resolver securely parsing tenant contexts across virtual threads. */

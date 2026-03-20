@@ -1,17 +1,16 @@
 package com.deathstar.vader.loom;
 
-import com.deathstar.vader.core.tracing.NatsTracingPropagator;
 import com.deathstar.vader.event.domain.DomainEvent;
 import com.deathstar.vader.event.domain.EventRoute;
 import com.deathstar.vader.event.spi.EventPublisher;
-import com.deathstar.vader.loom.core.domain.Event;
-import com.deathstar.vader.loom.core.engine.LoomEngine;
+import com.deathstar.vader.loom.domain.Event;
+import com.deathstar.vader.loom.engine.LoomEngine;
 import com.deathstar.vader.loom.infrastructure.PostgresStateRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.deathstar.vader.event.domain.EventMessage;
 import com.deathstar.vader.event.spi.EventSubscriber;
 import jakarta.annotation.PostConstruct;
-import java.nio.charset.StandardCharsets;
+
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;

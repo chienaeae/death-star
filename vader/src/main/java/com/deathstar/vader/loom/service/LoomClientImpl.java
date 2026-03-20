@@ -1,9 +1,8 @@
 package com.deathstar.vader.loom.service;
 
-import com.deathstar.vader.loom.api.LoomClient;
-import com.deathstar.vader.loom.core.domain.Event;
-import com.deathstar.vader.loom.core.engine.LoomEngine;
-import com.deathstar.vader.loom.core.spi.EventStore;
+import com.deathstar.vader.loom.domain.Event;
+import com.deathstar.vader.loom.engine.LoomEngine;
+import com.deathstar.vader.loom.spi.EventStore;
 import com.deathstar.vader.loom.infrastructure.ScopedValueIdentityResolver;
 import java.util.Map;
 import java.util.UUID;

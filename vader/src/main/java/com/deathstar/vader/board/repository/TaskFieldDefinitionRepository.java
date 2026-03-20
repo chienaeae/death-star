@@ -1,7 +1,7 @@
 package com.deathstar.vader.board.repository;
 
-import com.deathstar.vader.loom.core.domain.BucketType;
-import com.deathstar.vader.loom.core.domain.FieldDefinition;
+import com.deathstar.vader.loom.domain.BucketType;
+import com.deathstar.vader.loom.domain.FieldDefinition;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

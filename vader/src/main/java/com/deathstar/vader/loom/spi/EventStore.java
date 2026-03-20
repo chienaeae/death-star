@@ -1,6 +1,6 @@
-package com.deathstar.vader.loom.core.spi;
+package com.deathstar.vader.loom.spi;
 
-import com.deathstar.vader.loom.core.domain.Event;
+import com.deathstar.vader.loom.domain.Event;
 import java.util.List;
 import java.util.UUID;
 

@@ -1,6 +1,6 @@
-package com.deathstar.vader.loom.core.spi;
+package com.deathstar.vader.loom.spi;
 
-import com.deathstar.vader.loom.core.domain.Event;
+import com.deathstar.vader.loom.domain.Event;
 
 /**
  * SPI for Event Evolution. When old events are read from the log, they are run through a chain of

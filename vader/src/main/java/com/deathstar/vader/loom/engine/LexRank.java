@@ -1,4 +1,4 @@
-package com.deathstar.vader.loom.core.engine;
+package com.deathstar.vader.loom.engine;
 
 /**
  * Infinite split-point sorting logic (Lexical Ranking) to support custom ordering without

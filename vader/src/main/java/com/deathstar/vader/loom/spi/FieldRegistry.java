@@ -1,6 +1,6 @@
-package com.deathstar.vader.loom.core.spi;
+package com.deathstar.vader.loom.spi;
 
-import com.deathstar.vader.loom.core.domain.FieldDefinition;
+import com.deathstar.vader.loom.domain.FieldDefinition;
 import java.util.UUID;
 
 /** SPI for resolving FieldDefinitions from ID. */

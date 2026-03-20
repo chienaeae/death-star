@@ -1,4 +1,4 @@
-package com.deathstar.vader.loom.api;
+package com.deathstar.vader.loom.service;
 
 import java.util.Map;
 import java.util.UUID;

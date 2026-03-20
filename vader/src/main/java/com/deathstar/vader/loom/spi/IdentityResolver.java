@@ -1,4 +1,4 @@
-package com.deathstar.vader.loom.core.spi;
+package com.deathstar.vader.loom.spi;
 
 /**
  * SPI for resolving the current security context / tenant isolation securely across virtual

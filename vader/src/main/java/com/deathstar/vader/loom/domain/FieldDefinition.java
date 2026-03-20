@@ -1,4 +1,4 @@
-package com.deathstar.vader.loom.core.domain;
+package com.deathstar.vader.loom.domain;
 
 import java.util.UUID;
 

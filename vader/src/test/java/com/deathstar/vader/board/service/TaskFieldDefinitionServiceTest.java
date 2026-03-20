@@ -5,10 +5,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.deathstar.vader.loom.core.domain.BucketType;
-import com.deathstar.vader.loom.core.domain.FieldDefinition;
-import com.deathstar.vader.loom.core.domain.FieldDefinition.FieldType;
-import com.deathstar.vader.loom.core.spi.IdentityResolver;
+import com.deathstar.vader.loom.domain.BucketType;
+import com.deathstar.vader.loom.domain.FieldDefinition;
+import com.deathstar.vader.loom.domain.FieldDefinition.FieldType;
+import com.deathstar.vader.loom.spi.IdentityResolver;
 import com.deathstar.vader.board.infrastructure.BoardFieldRegistry;
 import com.deathstar.vader.board.repository.TaskFieldDefinitionRepository;
 import java.util.List;

@@ -1,7 +1,6 @@
 package com.deathstar.vader.loom.service;
 
-import com.deathstar.vader.loom.api.ItemQueryService;
-import com.deathstar.vader.loom.core.domain.Item;
+import com.deathstar.vader.loom.domain.Item;
 import com.deathstar.vader.loom.infrastructure.ScopedValueIdentityResolver;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;

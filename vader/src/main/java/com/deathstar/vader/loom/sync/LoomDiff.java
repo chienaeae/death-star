@@ -1,4 +1,4 @@
-package com.deathstar.vader.loom.core.sync;
+package com.deathstar.vader.loom.sync;
 
 import java.util.Map;
 import java.util.UUID;

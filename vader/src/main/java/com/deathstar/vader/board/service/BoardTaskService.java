@@ -1,11 +1,10 @@
 package com.deathstar.vader.board.service;
 
-import com.deathstar.vader.loom.api.ItemQueryService;
-import com.deathstar.vader.loom.api.ItemQueryService;
-import com.deathstar.vader.loom.api.LoomClient;
-import com.deathstar.vader.loom.core.domain.Item;
-import com.deathstar.vader.loom.core.engine.LexRank;
-import com.deathstar.vader.loom.domain.FieldConstants;
+import com.deathstar.vader.loom.service.ItemQueryService;
+import com.deathstar.vader.loom.service.LoomClient;
+import com.deathstar.vader.loom.domain.Item;
+import com.deathstar.vader.loom.engine.LexRank;
+import com.deathstar.vader.board.domain.FieldConstants;
 import com.deathstar.vader.loom.infrastructure.ScopedValueIdentityResolver;
 import java.util.List;
 import java.util.UUID;

@@ -1,11 +1,11 @@
 package com.deathstar.vader.board.infrastructure;
 
-import com.deathstar.vader.loom.core.domain.FieldDefinition;
-import com.deathstar.vader.loom.core.spi.FieldRegistry;
+import com.deathstar.vader.loom.domain.FieldDefinition;
+import com.deathstar.vader.loom.spi.FieldRegistry;
 import com.deathstar.vader.board.repository.TaskFieldDefinitionRepository;
-import com.deathstar.vader.loom.core.domain.BucketType;
-import com.deathstar.vader.loom.core.domain.FieldDefinition.FieldType;
-import com.deathstar.vader.loom.domain.FieldConstants;
+import com.deathstar.vader.loom.domain.BucketType;
+import com.deathstar.vader.loom.domain.FieldDefinition.FieldType;
+import com.deathstar.vader.board.domain.FieldConstants;
 import jakarta.annotation.PostConstruct;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;

@@ -1,6 +1,6 @@
-package com.deathstar.vader.loom.api;
+package com.deathstar.vader.loom.service;
 
-import com.deathstar.vader.loom.core.domain.Item;
+import com.deathstar.vader.loom.domain.Item;
 import java.util.List;
 import java.util.UUID;
 

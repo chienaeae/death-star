@@ -1,12 +1,12 @@
-package com.deathstar.vader.loom.core.engine;
+package com.deathstar.vader.loom.engine;
 
-import com.deathstar.vader.loom.core.domain.BucketType;
-import com.deathstar.vader.loom.core.domain.Event;
-import com.deathstar.vader.loom.core.spi.EventStore;
-import com.deathstar.vader.loom.core.spi.EventUpcaster;
-import com.deathstar.vader.loom.core.spi.FieldRegistry;
-import com.deathstar.vader.loom.core.spi.IdentityResolver;
-import com.deathstar.vader.loom.core.spi.StateRepository;
+import com.deathstar.vader.loom.domain.BucketType;
+import com.deathstar.vader.loom.domain.Event;
+import com.deathstar.vader.loom.spi.EventStore;
+import com.deathstar.vader.loom.spi.EventUpcaster;
+import com.deathstar.vader.loom.spi.FieldRegistry;
+import com.deathstar.vader.loom.spi.IdentityResolver;
+import com.deathstar.vader.loom.spi.StateRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;

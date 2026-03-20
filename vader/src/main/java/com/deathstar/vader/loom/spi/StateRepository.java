@@ -1,6 +1,6 @@
-package com.deathstar.vader.loom.core.spi;
+package com.deathstar.vader.loom.spi;
 
-import com.deathstar.vader.loom.core.domain.BucketType;
+import com.deathstar.vader.loom.domain.BucketType;
 import java.util.Map;
 import java.util.UUID;
 

@@ -1,11 +1,11 @@
 package com.deathstar.vader.loom.config;
 
-import com.deathstar.vader.loom.core.engine.LoomEngine;
-import com.deathstar.vader.loom.core.spi.EventStore;
-import com.deathstar.vader.loom.core.spi.FieldRegistry;
-import com.deathstar.vader.loom.core.spi.IdentityResolver;
-import com.deathstar.vader.loom.core.spi.StateRepository;
-import com.deathstar.vader.loom.domain.*;
+import com.deathstar.vader.loom.engine.LoomEngine;
+import com.deathstar.vader.loom.spi.EventStore;
+import com.deathstar.vader.loom.spi.FieldRegistry;
+import com.deathstar.vader.loom.spi.IdentityResolver;
+import com.deathstar.vader.loom.spi.StateRepository;
+
 import java.util.Collections;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

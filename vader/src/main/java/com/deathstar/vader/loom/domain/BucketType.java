@@ -1,4 +1,4 @@
-package com.deathstar.vader.loom.core.domain;
+package com.deathstar.vader.loom.domain;
 
 /**
  * Defines the physical storage routing for an attribute to combat PostgreSQL MVCC write
