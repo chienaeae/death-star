@@ -1,4 +1,4 @@
-package com.deathstar.vader.loom.repository;
+package com.deathstar.vader.board.repository;
 
 import com.deathstar.vader.loom.core.domain.BucketType;
 import com.deathstar.vader.loom.core.domain.FieldDefinition;

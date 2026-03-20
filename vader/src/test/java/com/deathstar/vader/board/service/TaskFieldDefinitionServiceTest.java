@@ -1,4 +1,4 @@
-package com.deathstar.vader.loom.service;
+package com.deathstar.vader.board.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -9,8 +9,8 @@ import com.deathstar.vader.loom.core.domain.BucketType;
 import com.deathstar.vader.loom.core.domain.FieldDefinition;
 import com.deathstar.vader.loom.core.domain.FieldDefinition.FieldType;
 import com.deathstar.vader.loom.core.spi.IdentityResolver;
-import com.deathstar.vader.loom.infrastructure.PostgresTaskFieldRegistry;
-import com.deathstar.vader.loom.repository.TaskFieldDefinitionRepository;
+import com.deathstar.vader.board.infrastructure.BoardFieldRegistry;
+import com.deathstar.vader.board.repository.TaskFieldDefinitionRepository;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class TaskFieldDefinitionServiceTest {
 
     @Mock private TaskFieldDefinitionRepository repository;
-    @Mock private PostgresTaskFieldRegistry fieldRegistry;
+    @Mock private BoardFieldRegistry fieldRegistry;
     @Mock private IdentityResolver identityResolver;
 
     private TaskFieldDefinitionService service;
