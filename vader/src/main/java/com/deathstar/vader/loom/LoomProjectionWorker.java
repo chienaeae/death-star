@@ -1,16 +1,15 @@
 package com.deathstar.vader.loom;
 
 import com.deathstar.vader.event.domain.DomainEvent;
+import com.deathstar.vader.event.domain.EventMessage;
 import com.deathstar.vader.event.domain.EventRoute;
 import com.deathstar.vader.event.spi.EventPublisher;
+import com.deathstar.vader.event.spi.EventSubscriber;
 import com.deathstar.vader.loom.domain.Event;
 import com.deathstar.vader.loom.engine.LoomEngine;
 import com.deathstar.vader.loom.infrastructure.PostgresStateRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.deathstar.vader.event.domain.EventMessage;
-import com.deathstar.vader.event.spi.EventSubscriber;
 import jakarta.annotation.PostConstruct;
-
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,10 +52,14 @@ public class LoomProjectionWorker {
     @PostConstruct
     public void init() {
         try {
-            eventSubscriber.subscribe(EventRoute.LOOM, ">", "loom-projection-worker", eventMessage -> {
-                // Hand off to Virtual Thread immediately for high-throughput
-                virtualThreadExecutor.execute(() -> projectEventPayload(eventMessage));
-            });
+            eventSubscriber.subscribe(
+                    EventRoute.LOOM,
+                    ">",
+                    "loom-projection-worker",
+                    eventMessage -> {
+                        // Hand off to Virtual Thread immediately for high-throughput
+                        virtualThreadExecutor.execute(() -> projectEventPayload(eventMessage));
+                    });
             log.info("LoomProjectionWorker initialized using EventSubscriber");
         } catch (Exception e) {
             log.error("Failed to subscribe to Loom events via EventSubscriber", e);

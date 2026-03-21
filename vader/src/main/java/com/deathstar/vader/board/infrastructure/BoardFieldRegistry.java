@@ -1,11 +1,11 @@
 package com.deathstar.vader.board.infrastructure;
 
-import com.deathstar.vader.loom.domain.FieldDefinition;
-import com.deathstar.vader.loom.spi.FieldRegistry;
+import com.deathstar.vader.board.domain.FieldConstants;
 import com.deathstar.vader.board.repository.TaskFieldDefinitionRepository;
 import com.deathstar.vader.loom.domain.BucketType;
+import com.deathstar.vader.loom.domain.FieldDefinition;
 import com.deathstar.vader.loom.domain.FieldDefinition.FieldType;
-import com.deathstar.vader.board.domain.FieldConstants;
+import com.deathstar.vader.loom.spi.FieldRegistry;
 import jakarta.annotation.PostConstruct;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,16 +23,28 @@ public class BoardFieldRegistry implements FieldRegistry {
 
     @PostConstruct
     public void initStandardFields() {
-        registerStandardField(FieldConstants.TITLE_ID, "Title", FieldType.STRING, BucketType.STATIC);
-        registerStandardField(FieldConstants.DESCRIPTION_ID, "Description", FieldType.LONG_TEXT, BucketType.STATIC);
-        registerStandardField(FieldConstants.STATUS_ID, "Status", FieldType.STATUS, BucketType.DYNAMIC);
-        registerStandardField(FieldConstants.LEXRANK_ID, "LexRank", FieldType.LEXRANK, BucketType.DYNAMIC);
-        registerStandardField(FieldConstants.PRIORITY_ID, "Priority", FieldType.STRING, BucketType.STATIC);
-        registerStandardField(FieldConstants.DUE_DATE_ID, "DueDate", FieldType.STRING, BucketType.STATIC);
+        registerStandardField(
+                FieldConstants.TITLE_ID, "Title", FieldType.STRING, BucketType.STATIC);
+        registerStandardField(
+                FieldConstants.DESCRIPTION_ID,
+                "Description",
+                FieldType.LONG_TEXT,
+                BucketType.STATIC);
+        registerStandardField(
+                FieldConstants.STATUS_ID, "Status", FieldType.STATUS, BucketType.DYNAMIC);
+        registerStandardField(
+                FieldConstants.LEXRANK_ID, "LexRank", FieldType.LEXRANK, BucketType.DYNAMIC);
+        registerStandardField(
+                FieldConstants.PRIORITY_ID, "Priority", FieldType.STRING, BucketType.STATIC);
+        registerStandardField(
+                FieldConstants.DUE_DATE_ID, "DueDate", FieldType.STRING, BucketType.STATIC);
         registerStandardField(FieldConstants.TYPE_ID, "Type", FieldType.STRING, BucketType.DYNAMIC);
-        registerStandardField(FieldConstants.BOARD_ID, "BoardId", FieldType.STRING, BucketType.DYNAMIC);
-        registerStandardField(FieldConstants.ORDER_INDEX_ID, "OrderIndex", FieldType.INTEGER, BucketType.DYNAMIC);
-        registerStandardField(FieldConstants.CREATED_AT_ID, "CreatedAt", FieldType.STRING, BucketType.STATIC);
+        registerStandardField(
+                FieldConstants.BOARD_ID, "BoardId", FieldType.STRING, BucketType.DYNAMIC);
+        registerStandardField(
+                FieldConstants.ORDER_INDEX_ID, "OrderIndex", FieldType.INTEGER, BucketType.DYNAMIC);
+        registerStandardField(
+                FieldConstants.CREATED_AT_ID, "CreatedAt", FieldType.STRING, BucketType.STATIC);
         log.debug("Successfully initialized {} standard structural fields.", localCache.size());
     }
 

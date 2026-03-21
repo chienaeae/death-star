@@ -1,4 +1,4 @@
-import { Bell, Lock, ShieldCheck, User } from 'lucide-react';
+import { Bell, Lock, ShieldCheck, User, Briefcase } from 'lucide-react';
 import { NavLink } from 'react-router';
 
 export function SettingsLayout({ children }: { children: React.ReactNode }) {
@@ -31,6 +31,27 @@ export function SettingsLayout({ children }: { children: React.ReactNode }) {
                     )}
                     <User className="w-5 h-5" />
                     Profile Settings
+                  </>
+                )}
+              </NavLink>
+
+              <NavLink
+                to="/settings/workspace"
+                className={({ isActive }) =>
+                  `flex items-center gap-4 px-6 py-4 text-sm font-medium transition-colors relative ${
+                    isActive
+                      ? 'bg-accent text-accent-foreground'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+                    )}
+                    <Briefcase className="w-5 h-5" />
+                    Workspace
                   </>
                 )}
               </NavLink>

@@ -14,6 +14,7 @@ const GATEWAY_PREFIX = '/api/v1';
 // 1. The Closure Sanctuary (Absolute Memory Isolation)
 // ============================================================================
 let accessToken: string | null = null;
+let activeWorkspaceId: string | null = null;
 let refreshTokenPromise: Promise<string | null> | null = null; // Same-tab Mutex
 
 // ============================================================================
@@ -98,11 +99,15 @@ export const customFetch = async (
   input: RequestInfo | URL,
   init?: RequestInit,
 ): Promise<Response> => {
-  // Pre-flight: Inject Access Token if available
+  // Pre-flight: Inject Access Token and Workspace ID if available
   const currentToken = accessToken;
+  const currentWorkspace = activeWorkspaceId;
   const headers = new Headers(init?.headers);
   if (currentToken) {
     headers.set('Authorization', `Bearer ${currentToken}`);
+  }
+  if (currentWorkspace) {
+    headers.set('X-Workspace-Id', currentWorkspace);
   }
 
   let response = await fetch(input, { ...init, headers });
@@ -134,6 +139,11 @@ export const customFetch = async (
 export const apiClient = {
   // We expose customFetch so 3rd-party libs (like SSE) can use our intercepted fetch
   customFetch,
+
+  setWorkspaceId: (id: string | null) => {
+    activeWorkspaceId = id;
+  },
+  getWorkspaceId: () => activeWorkspaceId,
 
   // Hydration function used during App Initialization (F5 Refresh)
   hydrateSession: async (): Promise<boolean> => {

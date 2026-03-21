@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css'; // Tailwind base imports
 
 import App from './App';
+import { WorkspaceProvider } from './features/workspace/context/WorkspaceContext';
 
 /**
  * Configure TanStack Query.
@@ -23,7 +24,9 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <App />
+      <WorkspaceProvider>
+        <App />
+      </WorkspaceProvider>
     </QueryClientProvider>
   </React.StrictMode>,
 );

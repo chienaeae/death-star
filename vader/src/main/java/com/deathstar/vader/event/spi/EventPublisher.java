@@ -7,8 +7,8 @@ import com.deathstar.vader.event.domain.EventRoute;
 public interface EventPublisher {
 
     /**
-     * Publish an event. Automatically chooses JetStream (Durable) or NATS Core (Ephemeral)
-     * based on the EventRoute's durable setting.
+     * Publish an event. Automatically chooses JetStream (Durable) or NATS Core (Ephemeral) based on
+     * the EventRoute's durable setting.
      */
     void publish(EventRoute route, String subjectSuffix, DomainEvent event);
 }

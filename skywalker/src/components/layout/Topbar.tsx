@@ -1,7 +1,8 @@
 import { Button } from '@death-star/millennium';
 import { AlignLeft, LogOut, Settings } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router';
+import { WorkspaceSwitcher } from '../../features/workspace/components/WorkspaceSwitcher';
 
 interface TopbarProps {
   onLogout: () => void;
@@ -29,7 +30,8 @@ export function Topbar({ onLogout, title = 'Death Star Objectives' }: TopbarProp
         <Link to="/">{title}</Link>
       </h1>
 
-      <div className="relative" ref={dropdownRef}>
+      <div className="flex flex-row items-center relative" ref={dropdownRef}>
+        <WorkspaceSwitcher />
         <Button
           variant="ghost"
           size="icon"

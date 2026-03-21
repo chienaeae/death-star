@@ -1,11 +1,11 @@
 package com.deathstar.vader.board.controller;
 
 import com.deathstar.vader.api.TaskFieldsApi;
+import com.deathstar.vader.board.service.TaskFieldDefinitionService;
 import com.deathstar.vader.dto.generated.TaskFieldDefinition;
 import com.deathstar.vader.dto.generated.TaskFieldDefinitionRequest;
 import com.deathstar.vader.loom.domain.BucketType;
 import com.deathstar.vader.loom.domain.FieldDefinition;
-import com.deathstar.vader.board.service.TaskFieldDefinitionService;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class TaskFieldDefinitionController implements TaskFieldsApi {
     private final TaskFieldDefinitionService service;
 
     @Override
-    public ResponseEntity<List<TaskFieldDefinition>> tasksFieldsGet() {
+    public ResponseEntity<List<TaskFieldDefinition>> tasksFieldsGet(java.util.UUID xWorkspaceId) {
         List<FieldDefinition> domainFields = service.getAllFields();
 
         List<TaskFieldDefinition> dtos =
@@ -47,7 +47,8 @@ public class TaskFieldDefinitionController implements TaskFieldsApi {
     }
 
     @Override
-    public ResponseEntity<TaskFieldDefinition> tasksFieldsPost(TaskFieldDefinitionRequest request) {
+    public ResponseEntity<TaskFieldDefinition> tasksFieldsPost(
+            TaskFieldDefinitionRequest request, java.util.UUID xWorkspaceId) {
         BucketType domainBucket =
                 request.getBucketType() != null
                         ? BucketType.valueOf(request.getBucketType().name())

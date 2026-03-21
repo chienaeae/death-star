@@ -42,11 +42,15 @@ public class DistributedRevocationService {
 
     @PostConstruct
     public void init() {
-        eventSubscriber.subscribe(EventRoute.AUTH, "revoked", "distributed-revocation-service", eventMessage -> {
-            String revokedUserId = (String) eventMessage.domainEvent().payload();
-            log.warn("[KILL SWITCH] Received revocation event for user: {}", revokedUserId);
-            revokedUsersCache.put(revokedUserId, true);
-        });
+        eventSubscriber.subscribe(
+                EventRoute.AUTH,
+                "revoked",
+                "distributed-revocation-service",
+                eventMessage -> {
+                    String revokedUserId = (String) eventMessage.domainEvent().payload();
+                    log.warn("[KILL SWITCH] Received revocation event for user: {}", revokedUserId);
+                    revokedUsersCache.put(revokedUserId, true);
+                });
     }
 
     /** Broadcasts a revocation event to all Vader instances in the K8s cluster. */
@@ -69,14 +73,7 @@ public class DistributedRevocationService {
         eventPublisher.publish(
                 EventRoute.AUTH,
                 "revoked",
-                new DomainEvent(
-                        UUID.randomUUID(),
-                        "USER_REVOKED",
-                        Instant.now(),
-                        userId,
-                        userId
-                )
-        );
+                new DomainEvent(UUID.randomUUID(), "USER_REVOKED", Instant.now(), userId, userId));
     }
 
     /** O(1) RAM lookup to check if a user's JWT should be rejected immediately. */

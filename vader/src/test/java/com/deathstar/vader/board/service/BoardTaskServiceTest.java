@@ -5,11 +5,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
+import com.deathstar.vader.loom.infrastructure.ScopedValueIdentityResolver;
 import com.deathstar.vader.loom.service.ItemQueryService;
 import com.deathstar.vader.loom.service.LoomClient;
-import com.deathstar.vader.loom.infrastructure.ScopedValueIdentityResolver;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,8 +26,7 @@ class BoardTaskServiceTest {
     @InjectMocks private BoardTaskService boardTaskService;
 
     @BeforeEach
-    void setUp() {
-    }
+    void setUp() {}
 
     @Test
     void createTask_usesLoomClientToCreateItem() {

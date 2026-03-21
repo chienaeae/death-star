@@ -13,6 +13,7 @@ import com.deathstar.vader.auth.UserIdentity;
 import com.deathstar.vader.auth.repository.*;
 import com.deathstar.vader.auth.repository.UserRepository;
 import com.deathstar.vader.event.spi.EventPublisher;
+import com.deathstar.vader.workspace.service.WorkspaceService;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -48,6 +49,8 @@ class AuthServiceTest {
 
     @Mock private AuditEventFactory auditEventFactory;
 
+    @Mock private WorkspaceService workspaceService;
+
     @InjectMocks private AuthService authService;
 
     private User testUser;
@@ -81,6 +84,7 @@ class AuthServiceTest {
         verify(userRepository).save(any(User.class));
         verify(identityRepository).save(any(UserIdentity.class));
         verify(refreshTokenRepository).save(any(RefreshToken.class));
+        verify(workspaceService).createDefaultWorkspace(testUser.getId());
     }
 
     @Test

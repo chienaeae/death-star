@@ -11,6 +11,7 @@ import com.deathstar.vader.auth.repository.UserIdentityRepository;
 import com.deathstar.vader.auth.repository.UserRepository;
 import com.deathstar.vader.event.domain.EventRoute;
 import com.deathstar.vader.event.spi.EventPublisher;
+import com.deathstar.vader.workspace.service.WorkspaceService;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -42,6 +43,7 @@ public class AuthService {
     private final DistributedRevocationService revocationService;
     private final EventPublisher eventPublisher;
     private final AuditEventFactory auditEventFactory;
+    private final WorkspaceService workspaceService;
 
     // 7 Days lifetime for Refresh Tokens
     private static final long REFRESH_TOKEN_VALIDITY_DAYS = 7;
@@ -60,6 +62,8 @@ public class AuthService {
         String hashedPassword = passwordEncoder.encode(rawPassword);
         UserIdentity identity = new UserIdentity(user, PROVIDER_LOCAL, hashedPassword);
         identityRepository.save(identity);
+
+        workspaceService.createDefaultWorkspace(user.getId());
 
         eventPublisher.publish(
                 EventRoute.AUDIT,

@@ -3,6 +3,7 @@ package com.deathstar.vader.core.security;
 import com.deathstar.vader.auth.*;
 import com.deathstar.vader.auth.service.DistributedRevocationService;
 import com.deathstar.vader.loom.infrastructure.ScopedValueIdentityResolver;
+import com.deathstar.vader.workspace.service.WorkspaceService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,6 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
     private final DistributedRevocationService revocationService;
+    private final WorkspaceService workspaceService;
 
     @Override
     protected void doFilterInternal(
@@ -75,10 +77,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         instanceof
                         org.springframework.security.authentication.AnonymousAuthenticationToken)) {
             String authenticatedUserId = auth.getName();
+
+            // Workspace Context Resolution
+            String workspaceIdHeader = request.getHeader("X-Workspace-Id");
+            java.util.UUID tenantId = null;
+            if (StringUtils.hasText(workspaceIdHeader)) {
+                try {
+                    java.util.UUID requestedWorkspaceId =
+                            java.util.UUID.fromString(workspaceIdHeader);
+                    if (workspaceService.isMember(
+                            java.util.UUID.fromString(authenticatedUserId), requestedWorkspaceId)) {
+                        tenantId = requestedWorkspaceId;
+                    }
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid X-Workspace-Id header format", e);
+                }
+            }
+            if (tenantId == null) {
+                tenantId =
+                        workspaceService.getActiveWorkspace(
+                                java.util.UUID.fromString(authenticatedUserId));
+            }
+            String tenantIdStr = tenantId != null ? tenantId.toString() : authenticatedUserId;
+
             try {
                 java.lang.ScopedValue.where(
                                 ScopedValueIdentityResolver.USER_ID, authenticatedUserId)
-                        .where(ScopedValueIdentityResolver.TENANT_ID, authenticatedUserId)
+                        .where(ScopedValueIdentityResolver.TENANT_ID, tenantIdStr)
                         .run(
                                 () -> {
                                     try {

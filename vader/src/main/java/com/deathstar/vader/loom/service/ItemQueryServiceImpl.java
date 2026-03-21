@@ -33,11 +33,15 @@ public class ItemQueryServiceImpl implements ItemQueryService {
             String dynamicJson = rs.getString("attr_dynamic");
 
             if (staticJson != null && !staticJson.isEmpty()) {
-                Map<String, Object> map = objectMapper.readValue(staticJson, new TypeReference<Map<String, Object>>() {});
+                Map<String, Object> map =
+                        objectMapper.readValue(
+                                staticJson, new TypeReference<Map<String, Object>>() {});
                 map.forEach((k, v) -> staticAttrs.put(UUID.fromString(k), v));
             }
             if (dynamicJson != null && !dynamicJson.isEmpty()) {
-                Map<String, Object> map = objectMapper.readValue(dynamicJson, new TypeReference<Map<String, Object>>() {});
+                Map<String, Object> map =
+                        objectMapper.readValue(
+                                dynamicJson, new TypeReference<Map<String, Object>>() {});
                 map.forEach((k, v) -> dynamicAttrs.put(UUID.fromString(k), v));
             }
 
@@ -46,8 +50,7 @@ public class ItemQueryServiceImpl implements ItemQueryService {
                     UUID.fromString(rs.getString("id")),
                     rs.getLong("version"),
                     staticAttrs,
-                    dynamicAttrs
-            );
+                    dynamicAttrs);
         } catch (Exception e) {
             throw new SQLException("Failed to map Item row", e);
         }
@@ -56,20 +59,23 @@ public class ItemQueryServiceImpl implements ItemQueryService {
     @Override
     @Transactional(readOnly = true)
     public Item getItem(UUID id) {
-        String sql = "SELECT id, tenant_id, version, attr_static, attr_dynamic FROM items WHERE id = :id AND tenant_id = :tenant_id";
-        List<Item> items = jdbcTemplate.query(
-                sql,
-                new MapSqlParameterSource()
-                        .addValue("id", id)
-                        .addValue("tenant_id", identityResolver.currentTenantId()),
-                this::mapRow);
+        String sql =
+                "SELECT id, tenant_id, version, attr_static, attr_dynamic FROM items WHERE id = :id AND tenant_id = :tenant_id";
+        List<Item> items =
+                jdbcTemplate.query(
+                        sql,
+                        new MapSqlParameterSource()
+                                .addValue("id", id)
+                                .addValue("tenant_id", identityResolver.currentTenantId()),
+                        this::mapRow);
         return items.isEmpty() ? null : items.get(0);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Item> getItemsByStaticProperty(String propertyName, Object value) {
-        String sql = "SELECT id, tenant_id, version, attr_static, attr_dynamic FROM items WHERE tenant_id = :tenant_id AND attr_static->>:property_name = :value";
+        String sql =
+                "SELECT id, tenant_id, version, attr_static, attr_dynamic FROM items WHERE tenant_id = :tenant_id AND attr_static->>:property_name = :value";
         return jdbcTemplate.query(
                 sql,
                 new MapSqlParameterSource()
@@ -82,7 +88,8 @@ public class ItemQueryServiceImpl implements ItemQueryService {
     @Override
     @Transactional(readOnly = true)
     public List<Item> getItemsByDynamicProperty(UUID propertyId, Object value) {
-        String sql = "SELECT id, tenant_id, version, attr_static, attr_dynamic FROM items WHERE tenant_id = :tenant_id AND attr_dynamic->>:property_id = :value";
+        String sql =
+                "SELECT id, tenant_id, version, attr_static, attr_dynamic FROM items WHERE tenant_id = :tenant_id AND attr_dynamic->>:property_id = :value";
         return jdbcTemplate.query(
                 sql,
                 new MapSqlParameterSource()
@@ -96,9 +103,10 @@ public class ItemQueryServiceImpl implements ItemQueryService {
     @Transactional(readOnly = true)
     public List<Item> getItemsByDynamicPropertyIn(UUID propertyId, List<?> values) {
         if (values == null || values.isEmpty()) return List.of();
-        
+
         List<String> stringValues = values.stream().map(Object::toString).toList();
-        String sql = "SELECT id, tenant_id, version, attr_static, attr_dynamic FROM items WHERE tenant_id = :tenant_id AND attr_dynamic->>:property_id IN (:values)";
+        String sql =
+                "SELECT id, tenant_id, version, attr_static, attr_dynamic FROM items WHERE tenant_id = :tenant_id AND attr_dynamic->>:property_id IN (:values)";
         return jdbcTemplate.query(
                 sql,
                 new MapSqlParameterSource()

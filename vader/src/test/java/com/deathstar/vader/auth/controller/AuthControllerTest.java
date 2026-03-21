@@ -17,6 +17,7 @@ import com.deathstar.vader.auth.service.AuthService;
 import com.deathstar.vader.auth.service.DistributedRevocationService;
 import com.deathstar.vader.dto.generated.AuthRegisterPostRequest;
 import com.deathstar.vader.dto.generated.LoginRequest;
+import com.deathstar.vader.workspace.service.WorkspaceService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,8 +44,10 @@ class AuthControllerTest {
 
     @MockitoBean private DistributedRevocationService revocationService;
 
+    @MockitoBean private WorkspaceService workspaceService;
+
     @Test
-    @WithMockUser
+    @WithMockUser(username = "123e4567-e89b-12d3-a456-426614174000")
     void shouldRegisterUser() throws Exception {
         AuthRegisterPostRequest request = new AuthRegisterPostRequest();
         request.setEmail("luke@rebellion.org");
@@ -70,7 +73,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "123e4567-e89b-12d3-a456-426614174000")
     void shouldLoginUser() throws Exception {
         LoginRequest request = new LoginRequest();
         request.setEmail("vader@empire.gov");

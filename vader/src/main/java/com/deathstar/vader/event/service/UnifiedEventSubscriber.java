@@ -34,16 +34,19 @@ public class UnifiedEventSubscriber implements EventSubscriber {
             Consumer<EventMessage> handler) {
 
         String fullSubject = route.subject(subjectSuffix);
-        String subscribeSubject = route.isDurable() && ">".equals(subjectSuffix) ? route.wildcardSubject() : fullSubject;
+        String subscribeSubject =
+                route.isDurable() && ">".equals(subjectSuffix)
+                        ? route.wildcardSubject()
+                        : fullSubject;
 
         try {
             if (route.isDurable()) {
                 // JetStream requires passing the handler inside the subscribe method natively
                 Dispatcher dispatcher = natsConnection.createDispatcher();
-                PushSubscribeOptions pso = PushSubscribeOptions.builder()
-                        .stream(route.stream())
-                        .durable(consumerGroup)
-                        .build();
+                PushSubscribeOptions pso =
+                        PushSubscribeOptions.builder().stream(route.stream())
+                                .durable(consumerGroup)
+                                .build();
 
                 jetStream.subscribe(
                         subscribeSubject,
@@ -52,14 +55,22 @@ public class UnifiedEventSubscriber implements EventSubscriber {
                         false, // autoAck = false -> Enables manual Ack Control
                         pso);
 
-                log.info("Initialized durable JetStream subscriber on [{}] with group: [{}]", subscribeSubject, consumerGroup);
+                log.info(
+                        "Initialized durable JetStream subscriber on [{}] with group: [{}]",
+                        subscribeSubject,
+                        consumerGroup);
 
             } else {
                 // NATS Core allows binding the handler directly to the dispatcher
-                Dispatcher dispatcher = natsConnection.createDispatcher(msg -> processMessageWrapper(msg, subscribeSubject, handler));
+                Dispatcher dispatcher =
+                        natsConnection.createDispatcher(
+                                msg -> processMessageWrapper(msg, subscribeSubject, handler));
                 dispatcher.subscribe(subscribeSubject, consumerGroup);
 
-                log.info("Initialized ephemeral NATS Core subscriber on [{}] with group: [{}]", subscribeSubject, consumerGroup);
+                log.info(
+                        "Initialized ephemeral NATS Core subscriber on [{}] with group: [{}]",
+                        subscribeSubject,
+                        consumerGroup);
             }
         } catch (Exception e) {
             log.error("Failed to initialize subscriber for [{}]", subscribeSubject, e);
@@ -67,16 +78,19 @@ public class UnifiedEventSubscriber implements EventSubscriber {
         }
     }
 
-    private void processMessageWrapper(Message msg, String subscribeSubject, Consumer<EventMessage> handler) {
+    private void processMessageWrapper(
+            Message msg, String subscribeSubject, Consumer<EventMessage> handler) {
         tracingPropagator.processMessageWithTracing(
                 msg,
                 "process_event",
                 tracedMsg -> {
                     DomainEvent domainEvent = null;
                     try {
-                        domainEvent = objectMapper.readValue(tracedMsg.getData(), DomainEvent.class);
+                        domainEvent =
+                                objectMapper.readValue(tracedMsg.getData(), DomainEvent.class);
                     } catch (Exception e) {
-                        log.error("Failed to deserialize event payload on [{}]", subscribeSubject, e);
+                        log.error(
+                                "Failed to deserialize event payload on [{}]", subscribeSubject, e);
                         tracedMsg.ack(); // Poison pill prevention
                         return;
                     }
@@ -84,10 +98,12 @@ public class UnifiedEventSubscriber implements EventSubscriber {
                     try {
                         handler.accept(new EventMessage(domainEvent, tracedMsg));
                     } catch (Exception e) {
-                        log.error("Unhandled exception processing subscriber handler for [{}]", subscribeSubject, e);
+                        log.error(
+                                "Unhandled exception processing subscriber handler for [{}]",
+                                subscribeSubject,
+                                e);
                         tracedMsg.nak(); // Retry on transient application layer errors
                     }
-                }
-        );
+                });
     }
 }

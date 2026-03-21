@@ -13,6 +13,7 @@ import com.deathstar.vader.auth.service.DistributedRevocationService;
 import com.deathstar.vader.dto.generated.UserProfileRequest;
 import com.deathstar.vader.profile.UserProfile;
 import com.deathstar.vader.profile.service.UserProfileService;
+import com.deathstar.vader.workspace.service.WorkspaceService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,8 @@ class UserProfileControllerTest {
     @MockitoBean private JwtProvider jwtProvider;
 
     @MockitoBean private DistributedRevocationService revocationService;
+
+    @MockitoBean private WorkspaceService workspaceService;
 
     private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 

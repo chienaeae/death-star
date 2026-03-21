@@ -22,21 +22,23 @@ public class BoardController implements BoardsApi {
     private final ScopedValueIdentityResolver identityResolver;
 
     @Override
-    public ResponseEntity<List<Board>> boardsGet() {
+    public ResponseEntity<List<Board>> boardsGet(UUID xWorkspaceId) {
         List<Board> response = boardTaskService.getBoards();
         return ResponseEntity.ok(response);
     }
 
     @Override
     public ResponseEntity<Board> boardsPost(
-            com.deathstar.vader.dto.generated.BoardCreateRequest request) {
+            com.deathstar.vader.dto.generated.BoardCreateRequest request, UUID xWorkspaceId) {
         var dtoBoard = boardTaskService.createBoard(request.getTitle());
         return ResponseEntity.ok(dtoBoard);
     }
 
     @Override
     public ResponseEntity<com.deathstar.vader.dto.generated.BoardColumn> boardsBoardIdColumnsPost(
-            UUID boardId, com.deathstar.vader.dto.generated.BoardColumnCreateRequest request) {
+            UUID boardId,
+            com.deathstar.vader.dto.generated.BoardColumnCreateRequest request,
+            UUID xWorkspaceId) {
         var dtoColumn =
                 boardTaskService.createColumn(boardId, request.getTitle(), request.getOrderIndex());
 
@@ -44,7 +46,7 @@ public class BoardController implements BoardsApi {
     }
 
     @Override
-    public ResponseEntity<Board> boardsBoardIdGet(UUID boardId) {
+    public ResponseEntity<Board> boardsBoardIdGet(UUID boardId, UUID xWorkspaceId) {
         var response = boardTaskService.getBoardWithColumns(boardId);
         var tasks = boardTaskService.getTasksForBoard(boardId);
 
@@ -55,7 +57,8 @@ public class BoardController implements BoardsApi {
                                 .filter(t -> t.getStatus().equals(col.getId()))
                                 .sorted(
                                         java.util.Comparator.comparing(
-                                                com.deathstar.vader.dto.generated.BoardTask::getLexRank,
+                                                com.deathstar.vader.dto.generated.BoardTask
+                                                        ::getLexRank,
                                                 java.util.Comparator.nullsLast(
                                                         java.util.Comparator.naturalOrder())))
                                 .toList();
@@ -68,14 +71,14 @@ public class BoardController implements BoardsApi {
 
     @Override
     public ResponseEntity<String> boardsBoardIdTasksPost(
-            UUID boardId, BoardTaskCreateRequest request) {
+            UUID boardId, BoardTaskCreateRequest request, UUID xWorkspaceId) {
         UUID taskId = boardTaskService.createTask(boardId, request.getTitle(), request.getStatus());
         return ResponseEntity.ok(taskId.toString());
     }
 
     @Override
     public ResponseEntity<Void> boardsBoardIdTasksTaskIdMovePost(
-            UUID boardId, UUID taskId, MoveTaskRequest request) {
+            UUID boardId, UUID taskId, MoveTaskRequest request, UUID xWorkspaceId) {
         // We assume currentVersion is derived from the UI's last known state, hardcoded to 0 for
         // demo if missing
         boardTaskService.moveTask(
@@ -91,7 +94,8 @@ public class BoardController implements BoardsApi {
     public ResponseEntity<com.deathstar.vader.dto.generated.BoardTask> boardsBoardIdTasksTaskIdPut(
             UUID boardId,
             UUID taskId,
-            com.deathstar.vader.dto.generated.BoardTaskUpdateRequest request) {
+            com.deathstar.vader.dto.generated.BoardTaskUpdateRequest request,
+            UUID xWorkspaceId) {
         boardTaskService.updateTask(
                 taskId,
                 request.getTitle(),

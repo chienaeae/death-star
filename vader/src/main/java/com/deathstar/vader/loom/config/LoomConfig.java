@@ -5,7 +5,6 @@ import com.deathstar.vader.loom.spi.EventStore;
 import com.deathstar.vader.loom.spi.FieldRegistry;
 import com.deathstar.vader.loom.spi.IdentityResolver;
 import com.deathstar.vader.loom.spi.StateRepository;
-
 import java.util.Collections;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

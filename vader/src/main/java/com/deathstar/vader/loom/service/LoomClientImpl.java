@@ -2,8 +2,8 @@ package com.deathstar.vader.loom.service;
 
 import com.deathstar.vader.loom.domain.Event;
 import com.deathstar.vader.loom.engine.LoomEngine;
-import com.deathstar.vader.loom.spi.EventStore;
 import com.deathstar.vader.loom.infrastructure.ScopedValueIdentityResolver;
+import com.deathstar.vader.loom.spi.EventStore;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,8 @@ public class LoomClientImpl implements LoomClient {
 
     @Override
     @Transactional
-    public UUID createItemWithId(UUID itemId, String itemType, Map<UUID, Object> initialProperties) {
+    public UUID createItemWithId(
+            UUID itemId, String itemType, Map<UUID, Object> initialProperties) {
         String tenantId = identityResolver.currentTenantId();
 
         // Emit Creation Event (baseVersion 0)

@@ -30,18 +30,19 @@ public class UnifiedEventPublisher implements EventPublisher {
             String fullSubject = route.subject(subjectSuffix);
 
             if (route.isDurable()) {
-                Message msg = NatsMessage.builder()
-                        .subject(fullSubject)
-                        .data(eventData)
-                        .build();
+                Message msg = NatsMessage.builder().subject(fullSubject).data(eventData).build();
                 jetStream.publish(msg);
-                log.debug("Published durable event to stream [{}] on subject [{}]", route.stream(), fullSubject);
+                log.debug(
+                        "Published durable event to stream [{}] on subject [{}]",
+                        route.stream(),
+                        fullSubject);
             } else {
                 natsConnection.publish(fullSubject, eventData);
                 log.debug("Published ephemeral event to subject [{}]", fullSubject);
             }
         } catch (Exception e) {
-            log.error("Failed to publish event (durable={}): {}", route.isDurable(), event.type(), e);
+            log.error(
+                    "Failed to publish event (durable={}): {}", route.isDurable(), event.type(), e);
         }
     }
 }

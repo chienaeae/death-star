@@ -1,11 +1,11 @@
 package com.deathstar.vader.board.service;
 
+import com.deathstar.vader.board.infrastructure.BoardFieldRegistry;
+import com.deathstar.vader.board.repository.TaskFieldDefinitionRepository;
 import com.deathstar.vader.loom.domain.BucketType;
 import com.deathstar.vader.loom.domain.FieldDefinition;
 import com.deathstar.vader.loom.domain.FieldDefinition.FieldType;
 import com.deathstar.vader.loom.spi.IdentityResolver;
-import com.deathstar.vader.board.infrastructure.BoardFieldRegistry;
-import com.deathstar.vader.board.repository.TaskFieldDefinitionRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

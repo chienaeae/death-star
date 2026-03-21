@@ -3,10 +3,7 @@ package com.deathstar.vader.event.domain;
 import io.nats.client.Message;
 import java.time.Duration;
 
-public record EventMessage(
-        DomainEvent domainEvent,
-        Message rawMessage
-) {
+public record EventMessage(DomainEvent domainEvent, Message rawMessage) {
     public void ack() {
         if (rawMessage != null) {
             rawMessage.ack();

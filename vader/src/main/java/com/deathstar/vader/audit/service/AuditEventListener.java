@@ -20,7 +20,8 @@ public class AuditEventListener {
     private final EventPublisher eventPublisher;
 
     /**
-     * Intercepts Spring ApplicationEvents, maps to DomainEvent, and publishes durably via EventPublisher.
+     * Intercepts Spring ApplicationEvents, maps to DomainEvent, and publishes durably via
+     * EventPublisher.
      */
     @Async
     @EventListener

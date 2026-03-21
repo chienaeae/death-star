@@ -7,6 +7,8 @@ import { Initializing } from './features/auth/components/Initializing';
 import { Dashboard } from './pages/Dashboard';
 import { UserProfile } from './features/profile/components/UserProfile';
 import { BoardView } from './features/board/components/BoardView';
+import { WorkspaceSettings } from './features/workspace/components/WorkspaceSettings';
+import { InviteAcceptPage } from './features/workspace/components/InviteAcceptPage';
 
 // --- First Principles: Auth State Machine Definition ---
 type AuthState = 'PENDING' | 'AUTHENTICATED' | 'UNAUTHENTICATED';
@@ -108,6 +110,18 @@ export default function App() {
             path="/settings/profile"
             element={
               authState === 'UNAUTHENTICATED' ? <Navigate to="/auth" replace /> : <UserProfile />
+            }
+          />
+          <Route
+            path="/settings/workspace"
+            element={
+              authState === 'UNAUTHENTICATED' ? <Navigate to="/auth" replace /> : <WorkspaceSettings />
+            }
+          />
+          <Route
+            path="/invite"
+            element={
+              authState === 'UNAUTHENTICATED' ? <Navigate to="/auth" replace /> : <InviteAcceptPage />
             }
           />
           <Route path="*" element={<Navigate to="/" replace />} />

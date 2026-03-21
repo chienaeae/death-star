@@ -25,9 +25,7 @@ public class SseBroadcasterService {
     // We iterate (read) to broadcast vastly more often than clients connect/disconnect (write).
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
-    public SseBroadcasterService(
-            ObjectMapper objectMapper,
-            EventSubscriber eventSubscriber) {
+    public SseBroadcasterService(ObjectMapper objectMapper, EventSubscriber eventSubscriber) {
         this.objectMapper = objectMapper;
         this.eventSubscriber = eventSubscriber;
     }
@@ -39,14 +37,19 @@ public class SseBroadcasterService {
     @PostConstruct
     public void initSubscriber() {
         try {
-            eventSubscriber.subscribe(EventRoute.SYSTEM, "", "sse-broadcaster", eventMessage -> {
-                try {
-                    String jsonPayload = objectMapper.writeValueAsString(eventMessage.domainEvent());
-                    broadcastToClients(jsonPayload);
-                } catch (Exception e) {
-                    log.error("Failed to serialize DomainEvent for SSE broadcast", e);
-                }
-            });
+            eventSubscriber.subscribe(
+                    EventRoute.SYSTEM,
+                    "",
+                    "sse-broadcaster",
+                    eventMessage -> {
+                        try {
+                            String jsonPayload =
+                                    objectMapper.writeValueAsString(eventMessage.domainEvent());
+                            broadcastToClients(jsonPayload);
+                        } catch (Exception e) {
+                            log.error("Failed to serialize DomainEvent for SSE broadcast", e);
+                        }
+                    });
             log.info("NATS SSE subscriber initialized via EventSubscriber");
         } catch (Exception e) {
             log.error("Failed to initialize NATS SSE subscriber", e);

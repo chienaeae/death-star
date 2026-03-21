@@ -1,6 +1,5 @@
 package com.deathstar.vader.audit.service;
 
-import com.deathstar.vader.core.tracing.NatsTracingPropagator;
 import com.deathstar.vader.event.domain.EventRoute;
 import com.deathstar.vader.event.spi.EventSubscriber;
 import io.opentelemetry.api.trace.Span;
@@ -28,9 +27,7 @@ public class AuditEventConsumer {
     private final ReentrantLock lock = new ReentrantLock();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    public AuditEventConsumer(
-            AuditService auditService,
-            EventSubscriber eventSubscriber) {
+    public AuditEventConsumer(AuditService auditService, EventSubscriber eventSubscriber) {
         this.auditService = auditService;
         this.eventSubscriber = eventSubscriber;
     }
@@ -38,49 +35,57 @@ public class AuditEventConsumer {
     @PostConstruct
     public void init() {
         try {
-            eventSubscriber.subscribe(EventRoute.AUDIT, ">", "audit-event-consumers", eventMessage -> {
-                Span currentSpan = Span.current();
-                String traceId =
-                        currentSpan.getSpanContext().isValid()
-                                ? currentSpan.getSpanContext().getTraceId()
-                                : "";
-                String spanId =
-                        currentSpan.getSpanContext().isValid()
-                                ? currentSpan.getSpanContext().getSpanId()
-                                : "";
+            eventSubscriber.subscribe(
+                    EventRoute.AUDIT,
+                    ">",
+                    "audit-event-consumers",
+                    eventMessage -> {
+                        Span currentSpan = Span.current();
+                        String traceId =
+                                currentSpan.getSpanContext().isValid()
+                                        ? currentSpan.getSpanContext().getTraceId()
+                                        : "";
+                        String spanId =
+                                currentSpan.getSpanContext().isValid()
+                                        ? currentSpan.getSpanContext().getSpanId()
+                                        : "";
 
-                try {
-                    com.deathstar.vader.event.domain.DomainEvent domainEvent = eventMessage.domainEvent();
+                        try {
+                            com.deathstar.vader.event.domain.DomainEvent domainEvent =
+                                    eventMessage.domainEvent();
 
-                    @SuppressWarnings("unchecked")
-                    java.util.Map<String, Object> payloadMap =
-                            (java.util.Map<String, Object>) domainEvent.payload();
+                            @SuppressWarnings("unchecked")
+                            java.util.Map<String, Object> payloadMap =
+                                    (java.util.Map<String, Object>) domainEvent.payload();
 
-                    MapSqlParameterSource params =
-                            new MapSqlParameterSource()
-                                    .addValue(
-                                            "timestamp",
-                                            java.sql.Timestamp.from(domainEvent.timestamp()))
-                                    .addValue("eventId", domainEvent.eventId())
-                                    .addValue("traceId", traceId)
-                                    .addValue("spanId", spanId)
-                                    .addValue("actorId", domainEvent.aggregateId())
-                                    .addValue("action", payloadMap.get("action"))
-                                    .addValue("resourceType", payloadMap.get("resourceType"))
-                                    .addValue("resourceId", payloadMap.get("resourceId"))
-                                    .addValue("status", payloadMap.get("status"))
-                                    // Simplified for demo: In production we use actual IP and context retrieval
-                                    .addValue("clientIp", "127.0.0.1")
-                                    .addValue("userAgent", "vader-internal")
-                                    .addValue("metadata", payloadMap.get("metadata"));
+                            MapSqlParameterSource params =
+                                    new MapSqlParameterSource()
+                                            .addValue(
+                                                    "timestamp",
+                                                    java.sql.Timestamp.from(
+                                                            domainEvent.timestamp()))
+                                            .addValue("eventId", domainEvent.eventId())
+                                            .addValue("traceId", traceId)
+                                            .addValue("spanId", spanId)
+                                            .addValue("actorId", domainEvent.aggregateId())
+                                            .addValue("action", payloadMap.get("action"))
+                                            .addValue(
+                                                    "resourceType", payloadMap.get("resourceType"))
+                                            .addValue("resourceId", payloadMap.get("resourceId"))
+                                            .addValue("status", payloadMap.get("status"))
+                                            // Simplified for demo: In production we use actual IP
+                                            // and context retrieval
+                                            .addValue("clientIp", "127.0.0.1")
+                                            .addValue("userAgent", "vader-internal")
+                                            .addValue("metadata", payloadMap.get("metadata"));
 
-                    addToBatch(params);
-                    eventMessage.ack(); // Acknowledge successful processing
-                } catch (Exception e) {
-                    log.error("Error processing audit event", e);
-                    eventMessage.nack();
-                }
-            });
+                            addToBatch(params);
+                            eventMessage.ack(); // Acknowledge successful processing
+                        } catch (Exception e) {
+                            log.error("Error processing audit event", e);
+                            eventMessage.nack();
+                        }
+                    });
         } catch (Exception e) {
             log.error("Failed to subscribe to JetStream audit events", e);
         }

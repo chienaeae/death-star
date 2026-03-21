@@ -147,6 +147,93 @@ paths:
                 $ref: '#/components/schemas/UserProfile'
 
   # ==========================================
+  # Workspace Routes
+  # ==========================================
+  /workspaces:
+    get:
+      tags: [Workspaces]
+      summary: List all workspaces the user is a member of
+      responses:
+        '200':
+          description: A list of workspaces.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workspace'
+    post:
+      tags: [Workspaces]
+      summary: Create a new workspace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceCreateRequest'
+      responses:
+        '201':
+          description: Workspace created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+
+  /workspaces/{id}/active:
+    post:
+      tags: [Workspaces]
+      summary: Set a workspace as the active workspace
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Workspace set as active
+
+  /workspaces/{id}/invitations:
+    post:
+      tags: [Workspaces]
+      summary: Invite a user by email
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceInviteRequest'
+      responses:
+        '200':
+          description: Invitation sent
+
+  /workspaces/invitations/{token}/accept:
+    post:
+      tags: [Workspaces]
+      summary: Accept a workspace invitation
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invitation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+
+  # ==========================================
   # Field Definition Routes
   # ==========================================
   /tasks/fields:
@@ -154,6 +241,8 @@ paths:
       tags: [Task Fields]
       summary: Get all Field Definitions
       description: Returns all configured fields (system and custom) for the current tenant.
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
       responses:
         '200':
           description: A list of field definitions
@@ -167,6 +256,8 @@ paths:
       tags: [Task Fields]
       summary: Create a newly defined Custom Field
       description: Allows users to create dynamic custom fields for their workspace.
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
       requestBody:
         required: true
         content:
@@ -227,6 +318,8 @@ paths:
     get:
       tags: [Boards]
       summary: List Boards
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
       responses:
         '200':
           description: A list of boards accessible by the user.
@@ -240,6 +333,8 @@ paths:
     post:
       tags: [Boards]
       summary: Create a Board
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
       requestBody:
         required: true
         content:
@@ -259,6 +354,7 @@ paths:
       tags: [Boards]
       summary: Create a Column
       parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
         - name: boardId
           in: path
           required: true
@@ -284,6 +380,7 @@ paths:
       tags: [Boards]
       summary: Get Board Details
       parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
         - name: boardId
           in: path
           required: true
@@ -303,6 +400,7 @@ paths:
       tags: [Boards]
       summary: Create a Task
       parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
         - name: boardId
           in: path
           required: true
@@ -328,6 +426,7 @@ paths:
       tags: [Boards]
       summary: Update a Task
       parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
         - name: boardId
           in: path
           required: true
@@ -359,6 +458,7 @@ paths:
       tags: [Boards]
       summary: Move a Task via LexRank
       parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
         - name: boardId
           in: path
           required: true
@@ -387,6 +487,15 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  parameters:
+    WorkspaceIdHeader:
+      name: X-Workspace-Id
+      in: header
+      required: false
+      schema:
+        type: string
+        format: uuid
 
   schemas:
     # Virtual SseEmitter Schema, to be intercepted and replaced in Gradle
@@ -693,3 +802,79 @@ components:
           type: string
           nullable: true
           description: The LexRank of the task immediately below the new position (null if bottom).
+
+    Workspace:
+      type: object
+      required: [id, name, ownerId, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        ownerId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+          description: Whether this workspace is currently active for the requesting user
+        isDefault:
+          type: boolean
+          description: Whether this is the default workspace created upon registration
+        ownerEmail:
+          type: string
+          nullable: true
+          description: The resolved email address of the workspace owner
+
+    WorkspaceCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+
+    WorkspaceInviteRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    WorkspaceMember:
+      type: object
+      required: [workspaceId, userId, role]
+      properties:
+        workspaceId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        role:
+          type: string
+
+    WorkspaceInvitation:
+      type: object
+      required: [id, workspaceId, email, token, status, expiresAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        token:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, ACCEPTED, EXPIRED]
+        expiresAt:
+          type: string
+          format: date-time
